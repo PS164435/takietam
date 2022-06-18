@@ -1,26 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void rek( int a)
+int f(unsigned int n)
 {
-    if(a==1)
-        printf("%d\n", a);
-    else if(a%2==0)
-        rek(a-1);
-    else if(a%2==1)
-    {
-        rek(a-2);
-        printf("%d\n", a);
-    }
+    if(n==0)
+        return 1;
+    if(n==1)
+        return 2;
+    if(n==2)
+        return -2;
+    if(n%3==0)
+        return 2*f(n/3);
+    if(n%3==1)
+        return f(n-1)-1;
+    if(n%3==2)
+        return f(n-1);
 }
 
 int main()
 {
-    unsigned int n;
-    printf("podaj n:");
-    scanf("%d", &n);
-
-    rek(n);
-
+    printf("%d\n", f(8));
     return 0;
 }

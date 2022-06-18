@@ -1,0 +1,4 @@
+- wkleić do nowego projektu
+
+- debug / debugging windows / watches
+- debug / next line

@@ -1,0 +1,9 @@
+float **rezerwacja(int n, int m)
+{
+    float **tab=(float**)malloc(sizeof(float*)*n);
+    for(int i=0;i<n;i++)
+    {
+        *(tab+i)=(float*)malloc(sizeof(float)*m);
+    }
+    return tab;
+}

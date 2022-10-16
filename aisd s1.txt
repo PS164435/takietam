@@ -1,0 +1,90 @@
+from typing import Any
+
+
+class Node:
+    value: Any
+    next: "Node"
+
+    def __init__(self, value: Any) -> None:
+        self.value = value
+        self.next = None
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class LinkedList:
+    head: Node
+    tail: Node
+
+    def __init__(self) -> None:
+        self.head = None
+
+    def __repr__(self):
+        current = self.head
+        nodes = []
+        while current:
+            nodes.append(str(current.value))
+            current = current.next
+        return " -> ".join(nodes)
+
+    def __len__(self):
+        count = 0
+        current = self.head
+        while current:
+            count += 1
+            current = current.next
+        return count
+
+    def push(self, value: Any) -> None:
+        if self.head == None:
+            self.head = Node(value)
+        else:
+            newNode = Node(value)
+            newNode.next = self.head
+            self.head = newNode
+
+    def append(self, value: Any) -> None:
+        if self.head == None:
+            self.head = Node(value)
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            newNode = Node(value)
+            current.next = newNode
+
+    def node(self, at: int) -> Node:
+        current = self.head
+        count = 0
+        while current:
+            if count == at:
+                return current
+            else:
+                current = current.next
+                count += 1
+
+    def insert(self, value: Any, after: Node) -> None:
+        newNext = after.next
+        newNode = Node(value)
+        after.next = newNode
+        newNode.next = newNext
+
+    def pop(self) -> Any:
+        temp = self.head
+        self.head = self.head.next
+        return temp
+
+    def remove_last(self) -> Any:
+        current = self.head
+        while current.next.next:
+            current = current.next
+        temp = current.next
+        current.next = None
+        return temp
+
+    def remove(self, after:Node) -> Any:
+        temp = after.next
+        newAfter = temp.next
+        after.next = newAfter
+        return temp

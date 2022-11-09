@@ -1,0 +1,184 @@
+
+===========================================================================
+------- punkt_alfa.py -------------------
+
+from __future__ import annotations
+from math import sqrt
+
+class Point(object):
+    x: float
+    y: float
+
+    def __init__(self, x: float, y: float) -> None:
+        self.x = x
+        self.y = y
+
+    def __str__(self) -> str:
+        return f'<{self.x}, {self.y}>'
+
+    def move(self, delta_x: float, delta_y: float) -> None:
+        self.x += delta_x
+        self.y += delta_y
+
+
+    @staticmethod
+    def distance(p1: Point, p2: Point) -> float:
+        return sqrt((p1.x-p2.x)**2 +(p1.y-p2.y)**2)
+
+------------- main_named_point.py ----------------
+
+from punkt_alfa import Point
+
+
+def main():
+    a: Point = Point(5, 9)
+    print(f'Utworzony punkt: {a}')
+    a.move(-2, 6)
+    print(f'Przesuniety punkt: {a}')
+    print(f'Wspolrzedna x: {a.x}, wspolrzedna y: {a.y}')
+    print(a.__dict__)
+
+if __name__ == "__main__":
+    main()
+
+------------------------- np_1.py -------------------------------
+
+class Person:
+    age: int=0
+
+
+----------------------- np_1_main.py ---------------------------
+
+from np_1 import Person
+
+def main():
+    p1: Person = Person()
+    print(p1.age)
+    p1.age = 90
+    print(p1.age)
+    p2: Person = Person()
+    print(p2.age)
+    Person.age = 11
+    print(p1.age)
+    print(p2.age)
+
+if __name__=="__main__":
+    main()
+
+---------------------------- zad3.py --------------------------------
+
+class SodaCan:
+    h:int
+    r:int
+
+    def __init__(self, h:int, r: int) -> None:
+        self.h = h
+        self.r = r
+
+    def get_surface_area(self) -> float:
+        return 2*3.14*(self.r)**2 + 2*3.14*self.r*self.h
+
+    def get_volume(self) -> float:
+        return 3.14*(self.r)**2*self.h
+
+-------------------------- zadanie2.py -----------------------------
+
+from __future__ import annotations
+
+class Address:
+    house: int
+    street: str
+    flat: int
+    city: str
+    zipcode: str
+
+    def __init__(self, city: str, zipcode: str, house: int, street: str,
+                 flat: int = None) -> None:
+        self.city=city
+        self.zipcode=zipcode
+        self.house=house
+        self.street=street
+        self.flat=flat
+
+    def show(self) -> None:
+        if self.flat != None:
+            print(f"{self.street} {self.house}/{self.flat}")
+        else:
+            print(f'{self.street} {self.house}')
+
+        print(f"{self.zipcode} {self.city}")
+
+    def comes_before(self, other: Address):
+        return self.zipcode < other.zipcode
+
+---------------------------- main_zadanie2.py -------------------
+
+from zadanie2 import Address
+
+def main():
+    a1: Address = Address("Olsztyn", "10-710", 45, "Słoneczna", 6)
+    a1.show()
+    a2: Address = Address("Olsztyn", "10-900", 1, "Ratuszsowa", 1)
+    print(a1.comes_before(a2))
+if __name__=="__main__":
+    main()
+ --------------------- zadanie5.py -------------------------------
+
+from __future__ import annotations
+
+class Student:
+    name: str
+    surname: str
+    all_quizes: float
+    quizes: int
+
+    def __init__(self, name: str, surname: str, all_quizes: float,
+                 quizes: int) -> None:
+        self.name = name
+        self.all_quizes = all_quizes
+        self.surname = surname
+        self.quizes = quizes
+
+    def get_name(self) -> str:
+        return self.name
+
+    def add_quiz(self, score: float) -> None:
+        self.all_quizes+=score
+        self.quizes+=1
+
+    def get_total_score(self):
+        return self.all_quizes
+
+    def get_average_score(self) -> float:
+        return self.all_quizes/self.quizes
+
+ --------------------------- main_zadanie5.py -------------------------
+
+from zadanie5 import Student
+
+def main():
+    s1: Student = Student("Jan", "Kowalski", 23.4, 3)
+    print(s1.get_name())
+    s1.add_quiz(5.9)
+    print(s1.get_total_score())
+    print(s1.get_average_score())
+
+if __name__=="__main__":
+    main()
+--------------------------- main_zad3.py ------------------------------
+
+from zad3.zad3 import SodaCan
+
+s1: SodaCan = SodaCan(4, 8)
+print(s1.get_volume())
+print(s1.get_surface_area())
+
+
+===========================================================================
+
+
+
+
+
+
+

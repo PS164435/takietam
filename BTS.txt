@@ -1,0 +1,69 @@
+class BinaryNode:
+    value: any
+    left_child: 'BinaryNode'
+    right_child: 'BinaryNode'
+
+    def __init__(self, value) -> None:
+        self.value = value
+        self.left_child = None
+        self.right_child = None
+
+    def min(self) -> any:
+        if self.left_child is not None:
+            return self.left_child.min()
+        return self
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+class BinarySearchTree:
+    root: BinaryNode
+
+    def insert(self, value: any) -> None:
+        return 1
+
+    def _insert(self, node: BinaryNode, value: any) -> BinaryNode:
+        return 1
+
+
+
+
+print("")
+print(" ========================== korzeń binarny search ========================== ")
+print("")
+
+x = BinaryNode(8)
+print(x)
+xl = BinaryNode(3)
+xp = BinaryNode(10)
+xll = BinaryNode(1)
+xlp = BinaryNode(6)
+xlpl = BinaryNode(4)
+xlpp = BinaryNode(7)
+xpp = BinaryNode(14)
+xppl = BinaryNode(13)
+
+x.left_child = xl
+x.right_child = xp
+xl.left_child = xll
+xl.right_child = xlp
+xlp.left_child = xlpl
+xlp.right_child = xlpp
+xp.right_child = xpp
+xpp.left_child = xppl
+print(x.right_child.right_child.left_child)
+
+print(x.min())
+
+print("")
+print(" ========================== drzewo binarne search ========================== ")
+print("")
+
+
+
+
+
+
+
+

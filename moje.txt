@@ -1,0 +1,109 @@
+from __future__ import annotations
+from typing import List
+import graphviz
+
+obrazek = graphviz.Digraph('obrazek')
+
+class BinaryNode:
+    value: any
+    left_child: BinaryNode
+    right_child: BinaryNode
+
+    def __init__(self, value: any) -> None:
+        self.value = value
+        self.left_child = None
+        self.right_child = None
+
+    def min(self) -> any:
+        if self.left_child is not None:
+            return self.left_child.min()
+        return self
+
+    def show(self) -> None:
+        if self.left_child is not None:
+            obrazek.edge(str(self.value), str(self.left_child.value))
+            self.left_child.show()
+        if self.right_child:
+            obrazek.edge(str(self.value), str(self.right_child.value))
+            self.right_child.show()
+        obrazek.render()
+
+
+class BinarySearchTree:
+    root: BinaryNode
+
+    def __init__(self, root: BinaryNode) -> None:
+        self.root = BinaryNode(root)
+
+    def insert(self, value: any) -> None:
+        x = self._insert(self.root, value)
+        self.root = x
+        self.parent = x.value
+
+    def _insert(self, node: BinaryNode, value: any) -> BinaryNode:
+        if value<node.value:
+            if node.left_child is None:
+                node.left_child = BinaryNode(value)
+            else:
+                self._insert(node.left_child, value)
+        else:
+            if node.right_child is None:
+                node.right_child = BinaryNode(value)
+            else:
+                self._insert(node.right_child, value)
+        return node
+
+    def insert_list(self, lista: List[any]) -> None:
+        for x in lista:
+            self.insert(x)
+    
+    def contains(self, value: any) -> bool:
+      x = self.root
+      while x is not None:
+        if x.value == value:
+         return True
+        elif x.value > value:
+         x = x.left_child
+        elif x.value < value:
+         x = x.right_child
+      return False
+
+
+    def remove(self, value: any) -> None:
+        self.root = self._remove(self.root, value)
+
+    def _remove(self, node: BinaryNode, value: any) -> BinaryNode:
+        if node.value == value:
+            if node.left_child is None and node.right_child is None:
+                return None
+            if node.left_child is not None and node.right_child is None:
+                return node.left_child
+            if node.left_child is None and node.right_child is not None:
+                return node.right_child
+            if node.left_child is not None and node.right_child is not None:
+              node.value = node.right_child.min().value
+              node.right_child = self._remove(node.right_child, node.value)
+        elif node.value > value:
+            node.left_child = self._remove(node.left_child, value)
+        elif node.value < value:
+            node.right_child = self._remove(node.right_child, value)
+        return node
+
+    def show(self) -> None:
+        self.root.show()
+
+
+
+
+print("")
+print(" ========================== korzeń binarny search ========================== ")
+print("")
+
+jodla: BinarySearchTree = BinarySearchTree(8)
+l = [3, 10, 14, 13, 1, 6, 4, 7]
+jodla.insert_list(l)
+print(jodla.contains(6))
+jodla.remove(6)
+print(jodla.contains(6))
+jodla.show()
+

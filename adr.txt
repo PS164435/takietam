@@ -1,0 +1,122 @@
+from __future__ import annotations
+from typing import Any, List
+import graphviz
+
+
+
+kolano = graphviz.Digraph('Janosik2')
+
+
+class BinaryNode:
+    value: Any
+    left_child: BinaryNode
+    right_child: BinaryNode
+
+    def __init__(self, value: Any) -> None:
+        self.value = value
+        self.left_child = None
+        self.right_child = None
+
+
+    def min(self) -> BinaryNode:
+         pom = self
+         while pom.left_child is not None:
+             pom = pom.left_child
+         return pom
+
+
+    def show(self) -> None:
+
+        pom = self
+        if pom.left_child:
+            pom_2 = pom
+            kolano.edge(str(pom.value), str(pom.left_child.value))
+            pom.left_child.show()
+            if pom_2.right_child:
+                kolano.edge(str(pom_2.value), str(pom_2.right_child.value))
+        if pom.right_child:
+            kolano.edge(str(pom.value), str(pom.right_child.value))
+            pom.right_child.show()
+
+
+        kolano.render()
+class BinarySearchTree:
+    root: BinaryNode
+
+    def __init__(self, root: BinaryNode) -> None:
+        self.root = BinaryNode(root)
+
+    def insert(self, value: Any) -> None:
+        pom = self._insert(self.root, value)
+        self.root = pom
+        self.parent = pom.value
+
+    def _insert(self, node: BinaryNode, value: Any) -> BinaryNode:
+        if value < node.value:
+            if node.left_child is None:
+                node.left_child = BinaryNode(value)
+                return node
+            else:
+                self._insert(node.left_child, value)
+        if value > node.value:
+            if node.right_child is None:
+                node.right_child = BinaryNode(value)
+                return node
+            else:
+                self._insert(node.right_child, value)
+        return node
+
+    def insert_list(self, lista: List[Any]) -> None:
+        for i in lista:
+            self.insert(i)
+
+    def contain(self, value: Any) -> bool:
+        pom = self.root
+        while pom is not None:
+            if pom.value == value:
+                return True
+            if value < pom.value:
+                if pom.left_child is None:
+                    return False
+                else:
+                    pom = pom.left_child
+            else:
+                if pom.right_child is None:
+                    return False
+                else:
+                    pom = pom.right_child
+
+    def remove(self, value: Any) -> None:
+        self.root = self._remove(self.root, value)
+
+    def _remove(self, node: BinaryNode, value: Any) -> BinaryNode:
+        if value == node.value:
+            if node.left_child is not None and node.right_child is not None:
+                return None
+            if node.left_child is None:
+                return node.right_child
+            if node.right_child is None:
+                return node.left_child
+            node.value = node.right_child.min()
+            node.right_child = self._remove(node.right_child, value)
+        if value < node.value:
+            node.left_child = self._remove(node.left_child, value)
+        if value > node.value:
+            node.right_child = self._remove(node.right_child, value)
+        return node
+
+    def show(self) -> None:
+        self.root.show()
+
+
+
+jodla: BinarySearchTree = BinarySearchTree(8)
+# jodla.insert(3)
+# jodla.insert(10)
+l = [3, 10, 14, 13, 1, 6, 4, 7]
+
+jodla.insert_list(l)
+print(jodla.contain(7))
+jodla.remove(6)
+
+jodla.show()

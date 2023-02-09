@@ -2,7 +2,7 @@ package uwm.edu.wmii;
 
 import java.util.Date;
 
-public class CordlessVacuumCleaner extends VacuumCleaner implements Named, Cloneable{
+public class CordlessVacuumCleaner extends VacuumCleaner implements Named, Cloneable, Comparable<CordlessVacuumCleaner> {
     private final int id;
     private Date dateOfProd = null;
 
@@ -29,4 +29,10 @@ public class CordlessVacuumCleaner extends VacuumCleaner implements Named, Clone
         odkurzacz1.dateOfProd = (Date) dateOfProd.clone();
         return odkurzacz1;
     }
+    @Override
+    public int compareTo(CordlessVacuumCleaner o){
+        int comp = this.getName().compareTo(o.getName());
+        return comp;
+    }
+
 }

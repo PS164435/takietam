@@ -1,0 +1,13 @@
+public class we {
+
+    public static void main(String[] args) {
+        System.out.println(przeliczanie(2));
+        System.out.println(przeliczanie(8));
+        System.out.println(przeliczanie(1));
+    }
+
+    public static int przeliczanie(int a)
+    {
+        return a*365;
+    }
+}

@@ -1,0 +1,57 @@
+plz = imread('C:\Users\Jacek\Desktop\plaza1.png.');
+imshow(plz);
+
+plz1 = plz;
+plz1(:,:,1)=plz(:,:,3); plz1(:,:,3)=plz(:,:,1);
+imshow(plz1);
+
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel =plz(:, :,:);
+[ir,wr] = hist(double(red_channel(:)), 100);
+[ig,wg] = hist(double(green_channel(:)), 100);
+[ib,wb] = hist(double(blue_channel(:)), 100);
+[ia,wa] = hist(double(all_channel(:)), 100);
+subplot (2,2,1); 
+bar(wa,ia);
+title('R+G+B');
+subplot (2,2,2);
+bar(wr,ir);
+title('R');
+subplot (2,2,3);
+bar(wg,ig);
+title('G');
+subplot (2,2,4);
+bar(wb,ib);
+title('B');
+
+minw = min(plz(:, :,:)(:)); plz(:, :,:)-=minw; maxw = max(plz(:, :,:)(:));
+plz(:, :,:)*=1.78321678322;
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel =plz(:, :,:);
+[ir,wr] = hist(double(red_channel(:)), 100);
+[ig,wg] = hist(double(green_channel(:)), 100);
+[ib,wb] = hist(double(blue_channel(:)), 100);
+[ia,wa] = hist(double(all_channel(:)), 100);
+subplot (2,2,1); bar(wa,ia); title('R+G+B');
+subplot (2,2,2); bar(wr,ir); title('R');
+subplot (2,2,3); bar(wg,ig); title('G');
+subplot (2,2,4); bar(wb,ib); title('B');
+imshow(plz);
+
+minw = min(plz(:, :,1)(:)); plz(:, :,1)-=minw; maxw = max(plz(:, :,1)(:));
+minw = min(plz(:, :,2)(:)); plz(:, :,2)-=minw; maxw = max(plz(:, :,2)(:));
+minw = min(plz(:, :,3)(:)); plz(:, :,3)-=minw; maxw = max(plz(:, :,3)(:));
+plz(:, :,1)*=3.8060;
+plz(:, :,2)*=2.8333;
+plz(:, :,3)*=1.7832;
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel =plz(:, :,:);
+[ir,wr] = hist(double(red_channel(:)), 100);
+[ig,wg] = hist(double(green_channel(:)), 100);
+[ib,wb] = hist(double(blue_channel(:)), 100);
+[ia,wa] = hist(double(all_channel(:)), 100);
+subplot (2,2,1); bar(wa,ia); title('R+G+B');
+subplot (2,2,2); bar(wr,ir); title('R');
+subplot (2,2,3); bar(wg,ig); title('G');
+subplot (2,2,4); bar(wb,ib); title('B');
+imshow(plz);

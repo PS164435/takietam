@@ -1,0 +1,229 @@
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+rg = ((r/255).^(1/1.5)) * 255;
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+rw1 = porownanievPSzm(r,rg,4);
+rw2 = porownaniev2zm(r,rg,3);
+figure
+subplot(2,2,1);
+imshow(r/255);
+title('org.');
+subplot(2,2,2);
+imshow(rg/255);
+title('gamma 1.5');
+subplot(2,2,3);
+imshow(rw1/255);
+title('porownianie v.PS * 4');
+subplot(2,2,4);
+imshow(rw2/255);
+title('porownianie v.2 * 3');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+function wyjscie = SzaroscSrednia (r,g,b)
+wyjscie = (r+g+b)/3;
+end
+function wyjscie = SzaroscSzary (r,g,b)
+wyjscie = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+end
+rsz = SzaroscSzary (r(:,:,1),r(:,:,2),r(:,:,3));
+rsr = SzaroscSrednia (r(:,:,1),r(:,:,2),r(:,:,3));
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+rw1 = porownanievPSzm(rsz,rsr,4);
+rw2 = porownaniev2zm(rsz,rsr,3);
+figure
+subplot(2,2,1);
+imshow(rsz/255);
+title('Szary');
+subplot(2,2,2);
+imshow(rsr/255);
+title('Srednia');
+subplot(2,2,3);
+imshow(rw1/255);
+title('porownianie v.PS * 4');
+subplot(2,2,4);
+imshow(rw2/255);
+title('porownianie v.2 * 3');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+Y = 0 + 0.299 * r(:,:,1) + 0.587 * r(:,:,2) + 0.114 * r(:,:,3);
+Cb = 128 - 0.168736 * r(:,:,1) - 0.331264 * r(:,:,2) + 0.5 * r(:,:,3);
+Cr = 128 + 0.5 * r(:,:,1) - 0.418688 * r(:,:,2) - 0.081312* r(:,:,3);
+figure
+subplot(2,2,1);
+imshow(r/255);
+title('RGB');
+subplot(2,2,2);
+imshow(Y/255);
+title('Y');
+subplot(2,2,3);
+imshow(Cb/255);
+title('Cb');
+subplot(2,2,4);
+imshow(Cr/255);
+title('Cr');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+Y = 0 + 0.299 * r(:,:,1) + 0.587 * r(:,:,2) + 0.114 * r(:,:,3);
+Cb = 128 - 0.168736 * r(:,:,1) - 0.331264 * r(:,:,2) + 0.5 * r(:,:,3);
+Cr = 128 + 0.5 * r(:,:,1) - 0.418688 * r(:,:,2) - 0.081312* r(:,:,3);
+R = Y + 1.402 * (Cr-128);
+G = Y - 0.344136 * (Cb-128) - 0.714136 * (Cr - 128);
+B = Y + 1.772 * (Cb-128);
+r2 = r;
+r2(:,:,1) = R; r2(:,:,2) = G; r2(:,:,3) = B;
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+rw1 = porownanievPSzm(r,r2,1000000);
+rw2 = porownaniev2zm(r,r2,1000000);
+figure
+subplot(1,2,1);
+imshow(rw1/255);
+title('porownianie v.PS * 1 000 000');
+subplot(1,2,2);
+imshow(rw2/255);
+title('porownianie v.2 * 1 000 000');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+Y = 0 + 0.299 * r(:,:,1) + 0.587 * r(:,:,2) + 0.114 * r(:,:,3);
+Cb = 128 - 0.168736 * r(:,:,1) - 0.331264 * r(:,:,2) + 0.5 * r(:,:,3);
+Cr = 128 + 0.5 * r(:,:,1) - 0.418688 * r(:,:,2) - 0.081312* r(:,:,3);
+Y = round(Y); Cb = round(Cb); Cr = round(Cr); 
+R = Y + 1.402 * (Cr-128);
+G = Y - 0.344136 * (Cb-128) - 0.714136 * (Cr - 128);
+B = Y + 1.772 * (Cb-128);
+R = round(R); G = round(G); B = round(B); 
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+r2 = r;
+r2(:,:,1) = R; r2(:,:,2) = G; r2(:,:,3) = B;
+rw1 = porownanievPSzm(r,r2,250);
+rw2 = porownaniev2zm(r,r2,300);
+figure
+subplot(2,2,1);
+imshow(r/255);
+title('RGB org');
+subplot(2,2,2);
+imshow(r2/255);
+title('to YCbCr, to RGB');
+subplot(2,2,3);
+imshow(rw1/255);
+title('porownianie v.PS * 250');
+subplot(2,2,4);
+imshow(rw2/255);
+title('porownianie v.2 * 300');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+rg = ((r/255).^(1/1.5)) * 255;
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+Y = 0 + 0.299 * r(:,:,1) + 0.587 * r(:,:,2) + 0.114 * r(:,:,3);
+Cb = 128 - 0.168736 * r(:,:,1) - 0.331264 * r(:,:,2) + 0.5 * r(:,:,3);
+Cr = 128 + 0.5 * r(:,:,1) - 0.418688 * r(:,:,2) - 0.081312* r(:,:,3);
+Y = ((Y/255).^(1/1.5)) * 255;
+R = Y + 1.402 * (Cr-128);
+G = Y - 0.344136 * (Cb-128) - 0.714136 * (Cr - 128);
+B = Y + 1.772 * (Cb-128);
+r2 = r;
+r2(:,:,1) = R; r2(:,:,2) = G; r2(:,:,3) = B;
+rw1 = porownanievPSzm(rg,r2,50);
+rw2 = porownaniev2zm(rg,r2,50);
+figure
+subplot(2,2,1);
+imshow(rg/255);
+title('RGB gamma 1.5');
+subplot(2,2,2);
+imshow(r2/255);
+title('YCbCr, Y gamma 1.5, RGB');
+subplot(2,2,3);
+imshow(rw1/255);
+title('porownianie v.PS * 50');
+subplot(2,2,4);
+imshow(rw2/255);
+title('porownianie v.2 * 50');
+
+clear;
+r = double(imread('C:\Users\Jacek\Desktop\rzeczka.jpg'));
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+Y = 0 + 0.299 * r(:,:,1) + 0.587 * r(:,:,2) + 0.114 * r(:,:,3);
+Cb = 128 - 0.168736 * r(:,:,1) - 0.331264 * r(:,:,2) + 0.5 * r(:,:,3);
+Cr = 128 + 0.5 * r(:,:,1) - 0.418688 * r(:,:,2) - 0.081312* r(:,:,3);
+Cb = PrzytnijZakres(128+(Cb-128) * 1.5);
+Cr = PrzytnijZakres(128+(Cr-128) * 1.5);
+R = Y + 1.402 * (Cr-128);
+G = Y - 0.344136 * (Cb-128) - 0.714136 * (Cr - 128);
+B = Y + 1.772 * (Cb-128);
+r2 = r;
+r2(:,:,1) = R; r2(:,:,2) = G; r2(:,:,3) = B;
+rw1 = porownanievPSzm(r,r2,10);
+rw2 = porownaniev2zm(r,r2,10);
+figure
+subplot(2,2,1);
+imshow(r/255);
+title('org');
+subplot(2,2,2);
+imshow(r2/255);
+title('YCbCr, Y kolory * 1.5, RGB');
+subplot(2,2,3);
+imshow(rw1/255);
+title('porownianie v.PS * 10');
+subplot(2,2,4);
+imshow(rw2/255);
+title('porownianie v.2 * 10');
+
+

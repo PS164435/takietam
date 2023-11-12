@@ -17,7 +17,7 @@ z8(end-1:-1:1,:)
 
 z9=[1,2,3;4,5,6;7,8,9]; z9(2<z9 & z9<5) += 10; z9
 
-z10=[1 2 3;4 5 4; 7 8 5] - mean(z10)
+z10=[1 2 3;4 5 4; 7 8 5]; z10 - mean(z10)
 
 z11 = [1 2 3; 4 5 4]
 size(z11)
@@ -53,7 +53,10 @@ z15(:,10:50,1)=255; z15(:,10:50,2)=255; z15(:,10:50,3)=0;
 imshow(z15);
 
 z15 = imread('C:\Users\Jacek\Desktop\rzeczka.jpg');
-imshow(z15);
+nowe = uint8(zeros(size(z15,1), size(z15,2) * 2, size(z15,3)));
+nowe(:,1:size(z15,2),:)=z15;
+nowe(:,end:-1:size(z15,2)+1,:)=z15;
+imshow(nowe);
 
 z15 = imread('C:\Users\Jacek\Desktop\rzeczka.jpg');
 z15(:,:,:)=255-(z15(:,:,:));

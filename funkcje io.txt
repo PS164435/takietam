@@ -1,0 +1,29 @@
+Lista Funkcji:
+- wyszukanie trasy
+- dodanie trasy
+- edytowanie trasy
+- usunięcie trasy
+- ustawienie stanu zaawansowania
+- ustawienie stanu rozliczenia
+- dodanie dodatkowych informacji
+
+Przypisanie funkcji do aktorów:
+Kierowca
+- wyszukanie trasy
+- dodanie dodatkowych informacji
+Księgowy
+-wyszukanie trasy
+- ustawienie stanu rozliczenia
+- dodanie dodatkowych informacji
+Logistyk
+- wyszukanie trasy
+- dodanie trasy
+- edytowanie trasy
+- usunięcie trasy
+- ustawienie stanu zaawansowania
+- dodanie dodatkowych informacji
+Dział obsługi klienta
+- wyszukanie trasy
+- usunięcie trasy
+- ustawienie stanu zaawansowania
+- dodanie dodatkowych informacji

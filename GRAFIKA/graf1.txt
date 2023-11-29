@@ -1,0 +1,64 @@
+z1=[1:-0.1:-0.9]
+
+z2=[1:3:40;2.1:-0.1:0.8]'
+
+z3 = [1,2,3;4,5,6;7,8,9] .* [1,100,10]'
+
+z4 = [1,2,3;4,5,6;7,8,9] .* [1,0.1,10]
+
+z5 = [11:20]
+z5>15 & z5<=18
+
+z6 = [1:2:41;2.1:0.1:4.1]' * [1;1000]
+
+z7 = [3 1;-1 1]^-1 * [31;-9]
+
+z8(end-1:-1:1,:)
+
+z9=[1,2,3;4,5,6;7,8,9]; z9(2<z9 & z9<5) += 10; z9
+
+z10=[1 2 3;4 5 4; 7 8 5]; z10 - mean(z10)
+
+z11 = [1 2 3; 4 5 4]
+size(z11)
+(rand(size(z11))-0.5)*2
+
+z12 = [randperm(6,3)-1;randperm(6,3)-1;randperm(6,3)-1;randperm(6,3)-1]
+for j=1:4
+for i=2:3
+z12(j,i)=z12(j,i)+z12(j,i-1);
+end;
+end;
+
+z13 = [randperm(6,4)-1;randperm(6,4)-1;randperm(6,4)-1]
+for j=1:3
+for i=1:4
+if z13(j,i)>3
+z13(j,i)=0;
+end;
+end;
+end;
+
+z14
+hold on;
+plot(abs(sin(-pi:pi)))
+plot(atan(-pi:pi))
+xlabel('IKSY')
+ylabel('IGREKI')
+legend('abs(sin(x))','atan(x)')
+title('Bardzo ważny wykres')
+
+z15 = imread('C:\Users\Jacek\Desktop\rzeczka.jpg');
+z15(:,10:50,1)=255; z15(:,10:50,2)=255; z15(:,10:50,3)=0;
+imshow(z15);
+
+z15 = imread('C:\Users\Jacek\Desktop\rzeczka.jpg');
+nowe = uint8(zeros(size(z15,1), size(z15,2) * 2, size(z15,3)));
+nowe(:,1:size(z15,2),:)=z15;
+nowe(:,end:-1:size(z15,2)+1,:)=z15;
+imshow(nowe);
+
+z15 = imread('C:\Users\Jacek\Desktop\rzeczka.jpg');
+z15(:,:,:)=255-(z15(:,:,:));
+imshow(z15);
+

@@ -1,0 +1,35 @@
+// wypisanie noda funkcja
+void wypiszNode(Node* node) {
+    if (node != nullptr) {
+        std::cout<<
+        "Wezel: X/Y: (" << node->x << "," << node->y << "), " <<
+        "Koszt dojscia: " << node->kosztdojscia << ", Heurystyka: " << node->heurystyka;
+        if (node->rodzic != nullptr) {
+            std::cout << ", Rodzic: (" << node->rodzic->x << ", " << node->rodzic->y << ")" << std::endl;
+        } else {
+            std::cout << ", Brak rodzica";
+        }
+        std::cout << ", F: " << node->fpoz << std::endl;
+    } else {
+        std::cout << "Nieprawidlowy wezel" << std::endl;
+    }
+}
+
+// wypisanie wypiszmacierzfmozycji
+void wypiszmacierzfmozycji(double macierz[WYMIAR][WYMIAR]) {
+    for (int i = 0; i < WYMIAR; i++) {
+        for (int j = 0; j < WYMIAR; j++) {
+            printf("%lf ", macierz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// wypisywanie listy
+void wypiszliste(list<Node*> LISTA) {
+    std::cout << "Zawartosc listy:";
+    for (const auto &element: LISTA) {
+        std::cout << "(" << element->x << "," << element->y << ")";
+    }
+    std::cout << std::endl;
+}

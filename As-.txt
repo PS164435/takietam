@@ -1,6 +1,7 @@
 // pobieranie pliku poprawić
 // czy ma zwracać mapę czy tylko wypisać?
 // czy musi sprawdzać czy start i meta są w zasięgu mapu, np czy nie mają (-4,26)
+// czy może być exitcode 46324612
 
 #include <cstdio>
 #include <cmath>
@@ -55,11 +56,16 @@ bool czynaliscie(std::list<Node *> LISTA, Node* wezel) {
     return false;
 }
 
-void przeszukaj(int macierz[WYMIAR][WYMIAR]) {
+int przeszukaj(int macierz[WYMIAR][WYMIAR]) {
 
     if (macierz[xstart][ystart] ==5){
-        std::cout << " Start jest na scianie! " << std::endl;
-    } else {
+        std::cout << "Start jest na scianie!" << std::endl;
+    }
+    else if (macierz[xmeta][ymeta] ==5) {
+        std::cout << "Meta jest na scianie!" << std::endl;
+    }
+    else
+    {
 
         std::list<Node *> LISTAOTWARTA = {};
         std::list<Node *> LISTAZAMKNIETA;
@@ -133,16 +139,8 @@ void przeszukaj(int macierz[WYMIAR][WYMIAR]) {
 
             //sprawdzanie pustosci listy otwartej (w celu gdy nie ma dostępu do mety)
             if (LISTAOTWARTA.empty()) {
-                Node *zminh = nullptr;
-                double minh = 99;
-                for (Node *node: LISTAZAMKNIETA) {
-                    if (node->heurystyka < minh) {
-                        minh = node->heurystyka;
-                        zminh = node;
-                    }
-                }
-                currentnode = zminh;
-                break;
+                std::cout << "Meta jest za ogrodzeniem!" << std::endl;
+                return 0;
             }
 
             // szukanie noda z min fpoz
@@ -163,16 +161,17 @@ void przeszukaj(int macierz[WYMIAR][WYMIAR]) {
 
         }
 
-       while (!(currentnode->x == xstart && currentnode->y == ystart)){
+        while (!(currentnode->x == xstart && currentnode->y == ystart)){
 
-           macierz[currentnode->x][currentnode->y] = 3;
-           currentnode = currentnode->rodzic;
-       }
+            macierz[currentnode->x][currentnode->y] = 3;
+            currentnode = currentnode->rodzic;
+        }
         macierz[currentnode->x][currentnode->y] = 3;
 
 
         wypiszmacierz(macierz);
     }
+    return 0;
 }
 
 int main() {
@@ -202,7 +201,8 @@ int main() {
     fclose(plik);
 
     // wypisanie macierzy(mapy) pobranej, bez trasy
-    /* wypiszmacierz(macierz); */
+    /* wypiszmacierz(macierz);
+    std::cout << std::endl; */
 
     przeszukaj(macierz);
 

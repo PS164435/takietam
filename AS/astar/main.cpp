@@ -1,0 +1,210 @@
+// pobieranie pliku poprawić
+// czy ma zwracać mapę czy tylko wypisać?
+// czy musi sprawdzać czy start i meta są w zasięgu mapu, np czy nie mają (-4,26)
+// czy może być exitcode 46324612
+
+#include <cstdio>
+#include <cmath>
+#include <iostream>
+#include <list>
+
+#define WYMIAR 20 //wymiar macierzy
+#define xstart 0 // koordynat x startu
+#define ystart 0 // koordynat y startu
+#define xmeta 19 // koordynat x mety
+#define ymeta 19 // koordynat y mety
+
+using namespace std;
+
+// węzeł reprezentujący pole
+struct Node {
+    int kosztdojscia;
+    int x;
+    int y;
+    double heurystyka;
+    Node* rodzic;
+    double fpoz=9999;
+
+    // konstruktor węzła
+    Node(int x, int y, Node* rodzic = nullptr) : x(x), y(y), rodzic(rodzic) {
+        kosztdojscia = (rodzic == nullptr) ? 0 : rodzic->kosztdojscia + 1;
+        heurystyka = sqrt(pow((xmeta - x), 2) + pow((ymeta - y), 2));
+    }
+
+    double wyliczfpoz() {
+        return kosztdojscia + heurystyka;
+    }
+};
+
+// wypisywanie macierzy
+void wypiszmacierz(int macierz[WYMIAR][WYMIAR]) {
+    for (int i = 0; i < WYMIAR; i++) {
+        for (int j = 0; j < WYMIAR; j++) {
+            printf("%d ", macierz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// czy node jest na liście
+bool czynaliscie(std::list<Node *> LISTA, Node* wezel) {
+    for (Node* node : LISTA) {
+        if (node->x == wezel->x && node->y == wezel->y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int przeszukaj(int macierz[WYMIAR][WYMIAR]) {
+
+    if (macierz[xstart][ystart] ==5){
+        std::cout << "Start jest na scianie!" << std::endl;
+    }
+    else if (macierz[xmeta][ymeta] ==5) {
+        std::cout << "Meta jest na scianie!" << std::endl;
+    }
+    else
+    {
+
+        std::list<Node *> LISTAOTWARTA = {};
+        std::list<Node *> LISTAZAMKNIETA;
+        double macierzfpozycji[WYMIAR][WYMIAR];
+        for (int i = 0; i < WYMIAR; i++) {
+            for (int j = 0; j < WYMIAR; j++) {
+                macierzfpozycji[i][j] = 9999;
+            }
+        }
+        Node* macierznodow[WYMIAR][WYMIAR];
+        for (int i = 0; i < WYMIAR; i++) {
+            for (int j = 0; j < WYMIAR; j++) {
+                macierznodow[i][j] = new Node(i,j);
+            }
+        }
+
+        Node* currentnode = new Node(xstart, ystart);
+        LISTAZAMKNIETA.push_back(currentnode);
+        macierznodow[currentnode->x][currentnode->y] = currentnode;
+        while ((currentnode->x != xmeta || currentnode->y != ymeta)){
+            if (currentnode->x - 1 >= 0 && macierz[currentnode->x - 1][currentnode->y] == 0
+                && !czynaliscie(LISTAZAMKNIETA, macierznodow[currentnode->x - 1][currentnode->y])) {
+                Node *nagore = new Node(currentnode->x - 1, currentnode->y, currentnode);
+                if (macierzfpozycji[currentnode->x - 1][currentnode->y]>nagore->wyliczfpoz()){
+                    nagore->fpoz = nagore->wyliczfpoz();
+                    macierzfpozycji[currentnode->x - 1][currentnode->y] = nagore->fpoz;
+                    macierznodow[currentnode->x-1][currentnode->y] = nagore;
+                }
+                if(!czynaliscie(LISTAOTWARTA, nagore)){
+                    LISTAOTWARTA.push_back(nagore);
+                }
+            }
+            if (currentnode->x + 1 <= WYMIAR-1 && macierz[currentnode->x + 1][currentnode->y] == 0
+                && !czynaliscie(LISTAZAMKNIETA, macierznodow[currentnode->x + 1][currentnode->y])){
+                Node *nadol = new Node(currentnode->x + 1, currentnode->y, currentnode);
+                if (macierzfpozycji[currentnode->x + 1][currentnode->y]>nadol->wyliczfpoz()){
+                    nadol->fpoz = nadol->wyliczfpoz();
+                    macierzfpozycji[currentnode->x + 1][currentnode->y] = nadol->fpoz;
+                    macierznodow[currentnode->x+1][currentnode->y] = nadol;
+                    macierznodow[currentnode->x+1][currentnode->y]->fpoz = nadol->fpoz;
+
+                }
+                if(!(czynaliscie(LISTAOTWARTA, nadol))){
+                    LISTAOTWARTA.push_back(nadol);
+                }
+            }
+            if (currentnode->y - 1 >= 0 && macierz[currentnode->x][currentnode->y - 1] == 0
+                && !czynaliscie(LISTAZAMKNIETA, macierznodow[currentnode->x][currentnode->y - 1])){
+                Node *nalewo = new Node(currentnode->x, currentnode->y - 1, currentnode);
+                if (macierzfpozycji[currentnode->x][currentnode->y - 1]>nalewo->wyliczfpoz()){
+                    nalewo->fpoz = nalewo->wyliczfpoz();
+                    macierzfpozycji[currentnode->x][currentnode->y - 1] = nalewo->fpoz;
+                    macierznodow[currentnode->x][currentnode->y- 1] = nalewo;
+                }
+                if(!czynaliscie(LISTAOTWARTA, nalewo)){
+                    LISTAOTWARTA.push_back(nalewo);
+                }
+            }
+            if (currentnode->y + 1 <= WYMIAR-1 && macierz[currentnode->x][currentnode->y + 1] == 0
+                && !czynaliscie(LISTAZAMKNIETA, macierznodow[currentnode->x][currentnode->y + 1])){
+                Node *naprawo = new Node(currentnode->x, currentnode->y + 1, currentnode);
+                if (macierzfpozycji[currentnode->x][currentnode->y + 1]>naprawo->wyliczfpoz()){
+                    naprawo->fpoz = naprawo->wyliczfpoz();
+                    macierzfpozycji[currentnode->x][currentnode->y+ 1] = naprawo->fpoz;
+                    macierznodow[currentnode->x][currentnode->y+ 1] = naprawo;
+                }
+                if(!czynaliscie(LISTAOTWARTA, naprawo)){
+                    LISTAOTWARTA.push_back(naprawo);
+                }
+            }
+
+            //sprawdzanie pustosci listy otwartej (w celu gdy nie ma dostępu do mety)
+            if (LISTAOTWARTA.empty()) {
+                std::cout << "Meta jest za ogrodzeniem!" << std::endl;
+                return 0;
+            }
+
+            // szukanie noda z min fpoz
+            Node *zminfpoz = nullptr;
+            double minfpoz = 9999;
+            for (Node *node: LISTAOTWARTA) {
+                if (node->fpoz < minfpoz) {
+                    minfpoz = node->fpoz;
+                    zminfpoz = node;
+                }
+            }
+
+            // dodaj node z min fpoz do listy zamkniętej
+            currentnode = zminfpoz;
+            LISTAZAMKNIETA.push_back(currentnode);
+            // usuń z listy otwartej node o min f poz
+            LISTAOTWARTA.remove(zminfpoz);
+
+        }
+
+        while (!(currentnode->x == xstart && currentnode->y == ystart)){
+
+            macierz[currentnode->x][currentnode->y] = 3;
+            currentnode = currentnode->rodzic;
+        }
+        macierz[currentnode->x][currentnode->y] = 3;
+
+
+        wypiszmacierz(macierz);
+    }
+    return 0;
+}
+
+int main() {
+
+
+    // otwarcie pliku
+    FILE *plik;
+    plik = fopen("C:\\Users\\Jacek\\Desktop\\astar\\grid.txt", "r");
+
+    // czy plik działa
+    if (plik == nullptr) {
+        printf("Nie mozna otworzyc pliku.\n");
+        return 1;
+    }
+
+    // stworzenie macierzy wymiarxwymiar
+    int macierz[WYMIAR][WYMIAR];
+
+    // wpisanie liczb z pliku do macierzy(mapy)
+    for (int i = 0; i < WYMIAR; i++) {
+        for (int j = 0; j < WYMIAR; j++) {
+            fscanf(plik, "%d", &macierz[i][j]);
+        }
+    }
+
+    // zamknięcie pliku
+    fclose(plik);
+
+    // wypisanie macierzy(mapy) pobranej, bez trasy
+    /* wypiszmacierz(macierz);
+    std::cout << std::endl; */
+
+    przeszukaj(macierz);
+
+    return 0;
+}

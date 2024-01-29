@@ -1,0 +1,29 @@
+function wyjscie = zastosujmaske(obr, maska)
+
+	wyjscie = obr;
+	gm1 = (size(maska,1)-1)/2;
+	gm2 = (size(maska,2)-1)/2;
+
+	for n = 1:size(obr,3)
+		r = obr(:,:,n);
+
+		r2 = zeros(size(r,1)+2*gm1,size(r,2)+2*gm2);
+		r2(1+gm1:end-gm1, 1+gm2:end-gm2) = r;
+		for i = [1:gm1,1:gm2]
+			[r2(i,:) = r2(gm1+1,:), r2(end+1-i,:) = r2(end-gm1,:)];
+			[r2(:,i) = r2(:,gm2+1), r2(:,end+1-i) = r2(:,end-gm2)];
+		end
+
+		r3 = zeros(size(r));
+		for i = (-gm1:gm1)
+		for j = (-gm2:gm2)
+		r3 += r2(gm1+1+i:end-gm1+i, gm2+1+j:end-gm2+j)*maska(i+gm1+1,j+gm2+1);
+		end
+		end
+
+
+		wyjscie(:,:,n)=r3;
+	end
+
+end
+

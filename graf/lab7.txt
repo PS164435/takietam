@@ -1,0 +1,80 @@
+function m = macierz(x,y)
+m = [x,0,0;0,y,0;0,0,1];
+end
+m = macierz(0.1,0.2);
+c = csvread('punktman.csv')';
+cc=ones(3,size(c,2));
+cc(1:2,:) = c;
+cc=m*cc;
+plot(cc(1,:),cc(2,:),'squareblack');
+
+c = csvread('punktman.csv')';
+srx = mean(c(1,:));
+sry = mean(c(2,:));
+function m = macierz(tx,ty)
+m = [1,0,tx;0,1,ty;0,0,1];
+end
+m = macierz(-srx,-sry);
+cc=ones(3,size(c,2));
+cc(1:2,:)=c;
+cc=m*cc;
+plot(cc(1,:),cc(2,:),'squareblack');
+
+function m = macierzO(o)
+o = deg2rad(o);
+m = [cos(o),-sin(o),0;sin(o),cos(o),0;0,0,1];
+end
+c = csvread('punktman.csv')';
+m = macierzO(-60);
+cc=ones(3,size(c,2));
+cc(1:2,:)=c;
+cc=m*cc;
+plot(cc(1,:),cc(2,:),'squareblack');
+
+function m = macierzS(sx,sy)
+m = [sx,0,0;0,sy,0;0,0,1];
+end
+function m = macierzT(tx,ty)
+m = [1,0,tx;0,1,ty;0,0,1];
+end
+function m = macierzO(o)
+o = deg2rad(o);
+m = [cos(o),-sin(o),0;sin(o),cos(o),0;0,0,1];
+end
+c = csvread('punktman.csv')';
+srx = mean(c(1,:));
+sry = mean(c(2,:));
+m1 = macierzT(-srx,-sry);
+m2 = macierzO(90);
+m3 = macierzS(0.01,0.01);
+m = m3*m2*m1;
+cc=ones(3,size(c,2));
+cc(1:2,:)=c;
+cc=m*cc;
+plot(cc(1,:),cc(2,:),'squareblack');
+
+function m = macierzS(sx,sy)
+m = [sx,0,0;0,sy,0;0,0,1];
+end
+function m = macierzT(tx,ty)
+m = [1,0,tx;0,1,ty;0,0,1];
+end
+function m = macierzO(o)
+o = deg2rad(o);
+m = [cos(o),-sin(o),0;sin(o),cos(o),0;0,0,1];
+end
+c = csvread('punktman.csv')';
+tx = min(c(1,:));
+ty = min(c(2,:));
+m = macierzT(-tx,-ty);
+cc=ones(3,size(c,2));
+cc(1:2,:)=c;
+cc1 = m*cc;
+m = macierzS(1,-0.5);
+cc2 = m*cc1;
+cc3 = zeros(3,size(c,2)*2);
+cc3(:,1:size(c,2)) = cc1;
+cc3(:,size(c,2)+1:end) = cc2;
+plot(cc3(1,:),cc3(2,:),'squareblack');
+
+

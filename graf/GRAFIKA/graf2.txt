@@ -1,0 +1,45 @@
+plz = double(imread('C:\Users\Jacek\Desktop\plaza1.png.'));
+imshow(plz/255);
+
+plz1 = plz;
+plz1(:,:,1)=plz(:,:,3); plz1(:,:,3)=plz(:,:,1);
+imshow(plz1/255);
+
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel = plz(:, :,:);
+subplot (2,2,1); 
+hist(vec(all_channel(:)), 100);
+title('R+G+B');
+subplot (2,2,2);
+hist(vec(red_channel(:)), 100);
+title('R');
+subplot (2,2,3);
+hist(vec(green_channel(:)), 100);
+title('G');
+subplot (2,2,4);
+hist(vec(blue_channel(:)), 100);
+title('B');
+
+minw = min(plz(:, :,:)(:)); maxw = max(plz(:, :,:)(:));
+plz = (plz - minw) / (maxw - minw) * 255;
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel = plz(:, :,:);
+subplot (2,2,1); hist(vec(all_channel(:)), 100); title('R+G+B');
+subplot (2,2,2); hist(vec(red_channel(:)), 100); title('G');
+subplot (2,2,3); hist(vec(green_channel(:)), 100); title('G');
+subplot (2,2,4); hist(vec(blue_channel(:)), 100); title('B');
+imshow(plz/255);
+
+red_channel = plz(:, :,1); green_channel = plz(:,:, 2); blue_channel = plz(:,:, 3);
+all_channel = plz(:, :,:);
+minwr = min(red_channel(:)); maxwr = max(red_channel(:));
+minwg = min(green_channel(:)); maxwg = max(green_channel(:));
+minwb = min(blue_channel(:)); maxwb = max(blue_channel(:));
+red_channel = (red_channel - minwr) / (maxwr - minwr) * 255;
+green_channel = (green_channel - minwg) / (maxwg - minwg) * 255;
+blue_channel = (blue_channel - minwb) / (maxwb - minwb) * 255;
+subplot (2,2,1); hist(vec(all_channel(:)), 100); title('R+G+B');
+subplot (2,2,2); hist(vec(red_channel(:)), 100); title('R');
+subplot (2,2,3); hist(vec(green_channel(:)), 100); title('G');
+subplot (2,2,4); hist(vec(blue_channel(:)), 100); title('B');
+imshow(plz/255);

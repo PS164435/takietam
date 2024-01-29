@@ -1,0 +1,102 @@
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+
+function wyjscie = zastosujmaske(obr, maska)
+wyjscie = obr;
+gm1 = (size(maska,1)-1)/2;
+gm2 = (size(maska,2)-1)/2;
+for n = 1:size(obr,3)
+r = obr(:,:,n);
+r2 = zeros(size(r,1)+2*gm1,size(r,2)+2*gm2);
+r2(1+gm1:end-gm1, 1+gm2:end-gm2) = r;
+for i = [1:gm1,1:gm2]
+[r2(i,:) = r2(gm1+1,:), r2(end+1-i,:) = r2(end-gm1,:)];
+[r2(:,i) = r2(:,gm2+1), r2(:,end+1-i) = r2(:,end-gm2)];
+end
+r3 = zeros(size(r));
+for i = (-gm1:gm1)
+for j = (-gm2:gm2)
+r3 += r2(gm1+1+i:end-gm1+i, gm2+1+j:end-gm2+j)*maska(i+gm1+1,j+gm2+1);
+end
+end
+wyjscie(:,:,n)=r3;
+end
+end
+
+===
+
+a = [23,24,25;33,34,35;63,64,65;73,74,75];
+maska = [0,0.2,0;0.3,0.4,0;0,0,0.1];
+xd = zastosujmaske(a,maska);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+maska = [5,6,5;6,6,6;5,6,5];
+maska./=sum(sum(maska));
+xd = zastosujmaske(r,maska);
+imshow(xd/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+maska = [0,-1,0;-1,5,-1;0,-1,0];
+xd = zastosujmaske(r,maska);
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+xd = PrzytnijZakres(xd);
+imshow(xd/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+maska = [0,0,0;-1,0,1;0,0,0];
+function wyjscie = SzaroscSrednia (r,g,b)
+wyjscie = (r+g+b)/3;
+end
+r2 = SzaroscSrednia (r(:,:,1),r(:,:,2),r(:,:,3));
+imshow(r2/255);
+r3 = zastosujmaske(r2,maska);
+r4 = abs(r3);
+imshow(r4/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+maska = [-1,-2,-1;0,0,0;1,2,1];
+r2 = abs(zastosujmaske(r,maska));
+imshow(r2/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+function wyjscie = SzaroscSrednia (r,g,b)
+wyjscie = (r+g+b)/3;
+end
+r2 = SzaroscSrednia (r(:,:,1),r(:,:,2),r(:,:,3));
+imshow(r2/255);
+a = [0,-1,0;0,0,0;0,1,0];
+b = [0,0,0;1,0,-1;0,0,0];
+obr1 = abs(zastosujmaske(r,a));
+obr2 = abs(zastosujmaske(r,b));
+obrw = max(obr1,obr2);
+imshow(obrw/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+a = [-1,-1,0;-1,0,1;0,1,1];
+function wyjscie = SzaroscSrednia (r,g,b)
+wyjscie = (r+g+b)/3;
+end
+r2 = SzaroscSrednia (r(:,:,1),r(:,:,2),r(:,:,3));
+r3 = zastosujmaske(r2,a);
+r3+=127.5;
+imshow(r3/255);
+
+r = double(imread('rzeczka.jpg'));
+imshow(r/255);
+a = [-1,-sqrt(2),-1;0,0,0;1,sqrt(2),1];
+b = [-1,0,1;-sqrt(2),0,sqrt(2);-1,0,1];
+r2 = (r(:,:,1)+r(:,:,2)+r(:,:,3))/3;
+obr1 = abs(zastosujmaske(r2,a));
+obr2 = abs(zastosujmaske(r2,b));
+img3 = sqrt(obr1.^2 + obr2.^2);
+imshow(img3/255);
+

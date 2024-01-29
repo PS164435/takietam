@@ -1,0 +1,54 @@
+function [xwe,ywe] = skalowanie(wejscie,swy,wwy)
+swe = size(wejscie,2);
+wwe = size(wejscie,1);
+xwy = 1:swy;
+ywy = 1:wwy;
+xwe = round(1+(((xwy-1)*(swe-1))/(swy-1)));
+ywe = round(1+(((ywy-1)*(wwe-1))/(wwy-1)));
+end
+
+
+r = double(imread('rzeczka.jpg'));
+[xwe,ywe] = skalowanie(r,333,222);
+r2 = r(ywe, xwe, :);
+imwrite(uint8(r2), 'zad1.jpg');
+
+r = double(imread('rzeczka_mniejsza.jpg'));
+[xwe,ywe] = skalowanie(r,1366,768);
+r2 = r(ywe, xwe, :);
+imwrite(uint8(r2), 'zad2.jpg');
+
+r = double(imread('logo_linuxa.png'));
+[xwe,ywe] = skalowanie(r,672,788);
+r2 = r(ywe, xwe, :);
+imwrite(uint8(r2), 'zad3.png');
+
+r = double(imread('zrzut_1.png'));
+[xwe,ywe] = skalowanie(r,900,432);
+r2 = r(ywe, xwe, :);
+imwrite(uint8(r2), 'zad4.png');
+
+
+r = double(imread('zrzut_1.png'));
+[xwe,ywe] = skalowanie(r,600,246);
+r2 = r(ywe,xwe,:);
+imwrite(uint8(r2),'zad5.png');
+
+r = double(imread('zrzut_1.png'));
+[xwe,ywe] = skalowanie(r,400,400);
+r2 = r(ywe,xwe,:);
+[xwe,ywe] = skalowanie(r2,size(r,2),size(r,1));
+r2 = r2(ywe,xwe,:);
+imwrite(uint8(r2),'zad6.png');
+
+
+
+
+
+
+
+
+
+
+
+

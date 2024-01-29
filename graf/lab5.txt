@@ -1,0 +1,284 @@
+r = double(imread('rzeczka_mniejsza.jpg'));
+imshow(r/255);
+R = r(:, :, 1)/255;
+G = r(:, :, 2)/255;
+B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B);
+MinRGB = min(min(R, G), B);
+Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+subplot(2,2,1)
+imshow(r/255);
+title('RGB');
+subplot(2,2,2)
+imshow(H/360);
+title('Hue/360stopni');
+subplot(2,2,3)
+imshow(S);
+title('Saturation');
+subplot(2,2,4)
+imshow(L);
+title('Lightness');
+
+r = double(imread('rzeczka_mniejsza.jpg'));
+imshow(r/255);
+R = r(:, :, 1)/255;
+G = r(:, :, 2)/255;
+B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B);
+MinRGB = min(min(R, G), B);
+Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+Chroma = (1-abs(2*L-1)).*S;
+X = Chroma.*(1-abs(mod(H/60,2)-1));
+MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+function wejscie = PrzytnijZakres(wejscie)
+wejscie(wejscie < 0) = 0;
+wejscie(wejscie > 255) = 255;
+end
+function wyjscie = porownanievPSzm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * abs(stare - nowe) );
+end
+function wyjscie = porownaniev2zm (stare, nowe, mnoznik)
+wyjscie = PrzytnijZakres( mnoznik * (nowe - stare) +  127.5);
+end
+obr1 = porownanievPSzm (r, r2, 1000000);
+obr2 = porownaniev2zm (r, r2, 1000000);
+subplot(1,2,1)
+imshow(obr1/255);
+title('porownanie v.PS * 1000000');
+subplot(1,2,2)
+imshow(obr2/255);
+title('porownanie v.2 * 1000000');
+
+r = double(imread('rzeczka_mniejsza.jpg'));
+imshow(r/255);
+R = r(:, :, 1)/255;
+G = r(:, :, 2)/255;
+B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B);
+MinRGB = min(min(R, G), B);
+Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+H -= 50;
+H=mod(H,360);
+Chroma = (1-abs(2*L-1)).*S;
+X = Chroma.*(1-abs(mod(H/60,2)-1));
+MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+subplot(1,2,1)
+imshow(r/255);
+title('org');
+subplot(1,2,2)
+imshow(r2/255);
+title('HUE - 50');
+
+r = double(imread('rzeczka_mniejsza.jpg')); imshow(r/255);
+R = r(:, :, 1)/255; G = r(:, :, 2)/255; B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B); MinRGB = min(min(R, G), B); Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+S=S.^(1/1.5);
+Chroma = (1-abs(2*L-1)).*S; X = Chroma.*(1-abs(mod(H/60,2)-1)); MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+subplot(1,2,1)
+imshow(r/255);
+title('org');
+subplot(1,2,2)
+imshow(r2/255);
+title('Saturation gamma 1.5');
+
+r = double(imread('rzeczka_mniejsza.jpg')); imshow(r/255);
+R = r(:, :, 1)/255; G = r(:, :, 2)/255; B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B); MinRGB = min(min(R, G), B); Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+L=L.^(1/0.7);
+Chroma = (1-abs(2*L-1)).*S; X = Chroma.*(1-abs(mod(H/60,2)-1)); MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+subplot(1,2,1)
+imshow(r/255);
+title('org');
+subplot(1,2,2)
+imshow(r2/255);
+title('Lightness gamma 0.7');
+
+r = double(imread('rzeczka_mniejsza.jpg')); imshow(r/255);
+R = r(:, :, 1)/255; G = r(:, :, 2)/255; B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B); MinRGB = min(min(R, G), B); Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+L(S>0) = 0.5; S(S>0) = 1;
+Chroma = (1-abs(2*L-1)).*S; X = Chroma.*(1-abs(mod(H/60,2)-1)); MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+subplot(1,2,1)
+imshow(r/255);
+title('org');
+subplot(1,2,2)
+imshow(r2/255);
+title('Jesli Sat.>0, Lightness=0.5 i Saturation=1');
+
+r = double(imread('rzeczka_mniejsza.jpg')); imshow(r/255);
+R = r(:, :, 1)/255; G = r(:, :, 2)/255; B = r(:, :, 3)/255;
+MaxRGB = max(max(R, G), B); MinRGB = min(min(R, G), B); Chroma = MaxRGB - MinRGB;
+H = zeros(size(R));
+warunek = (MaxRGB == R & Chroma > 0.001);
+H(warunek) = (mod((G(warunek)-B(warunek))./Chroma(warunek),6))*60;
+warunek = (MaxRGB == G & Chroma > 0.001);
+H(warunek) = (((B(warunek)-R(warunek))./Chroma(warunek))+2)*60;
+warunek = (MaxRGB == B & Chroma > 0.001);
+H(warunek) = (((R(warunek)-G(warunek))./Chroma(warunek))+4)*60;
+L = (MaxRGB+MinRGB)/2;
+S = zeros(size(R));
+warunek = (L>0.001 & L<0.999);
+S(warunek) = Chroma(warunek)./(1-abs(2*L(warunek)-1));
+x = [0:size(r,2)-1]/(size(r,2)-1); y = [size(r,1)-1:-1:0]/(size(r,1)-1); L.*=y'; S.*=x;
+Chroma = (1-abs(2*L-1)).*S; X = Chroma.*(1-abs(mod(H/60,2)-1)); MinRGB = L-(Chroma/2);
+Rp = zeros(size(R)); Gp = zeros(size(R)); Bp=zeros(size(R));
+warunek = ((0<=H & H<=60) | (300<H & H<=360));
+Rp(warunek) = (Chroma(warunek));
+warunek = ((60<H & H<=120) | (240<H & H<=300));
+Rp(warunek) = (X(warunek));
+warunek = (60<H & H<=180);
+Gp(warunek) = (Chroma(warunek));
+warunek = ((0<=H & H<=60) | (180<H & H<=240));
+Gp(warunek) = (X(warunek));
+warunek = (180<H & H<=300);
+Bp(warunek) = (Chroma(warunek));
+warunek = ((120<H & H<=180) | (300<H & H<=360));
+Bp(warunek) = (X(warunek));
+R=(Rp+MinRGB)*255; G=(Gp+MinRGB)*255; B=(Bp+MinRGB)*255; 
+r2=r; r2(:,:,1)=R; r2(:,:,2)=G; r2(:,:,3)=B;
+imshow(r2/255);
+title('S,L gradienty * (0->1)');
+
+
+

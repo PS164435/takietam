@@ -1,112 +1,42 @@
-from __future__ import annotations
-from typing import List
+#include <stdio.h>
+#include <stdlib.h>
+#define BIT_VALUE(val,noBit) (val>>noBit) & 1
 
-obrazek = graphviz.Digraph('obrazek')
+unsigned int counter = 0;
 
-class BinaryNode:
-    value: any
-    left_child: BinaryNode
-    right_child: BinaryNode
+void delay()
+{
+    for(int a=0;a<=147483647;a++)
+    {
+        for(int b=0;a<=512;b++)
+        {
 
-    def __init__(self, value: any) -> None:
-        self.value = value
-        self.left_child = None
-        self.right_child = None
+        }
+    }
+}
 
-    def min(self) -> any:
-        if self.left_child is not None:
-            return self.left_child.min()
-        return self
+int main(void)
+{
 
-    def show(self) -> None:
-        if self.left_child is not None:
-            obrazek.edge(str(self.value), str(self.left_child.value))
-            self.left_child.show()
-        if self.right_child:
-            obrazek.edge(str(self.value), str(self.right_child.value))
-            self.right_child.show()
-        obrazek.render()
+    int IntToGray(unsigned char input)
+    {
+        return (input >> 1) ^ input;
+    }
 
+    while(1)
+    {
+        printf("\r");
+        for(int i=7;i>=0;i--)
+        {
+            printf("%d",BIT_VALUE(counter,i));
+        }
+        printf(" ");
+        for(int i=7;i>=0;i--)
+        {
+            printf("%d",BIT_VALUE(IntToGray(counter),i));
+        }
 
-class BinarySearchTree:
-    root: BinaryNode
-
-    def __init__(self, root: BinaryNode) -> None:
-        self.root = BinaryNode(root)
-
-    def insert(self, value: any) -> None:
-        x = self._insert(self.root, value)
-        self.root = x
-        self.parent = x.value
-
-    def _insert(self, node: BinaryNode, value: any) -> BinaryNode:
-        if value<node.value:
-            if node.left_child is None:
-                node.left_child = BinaryNode(value)
-            else:
-                self._insert(node.left_child, value)
-        else:
-            if node.right_child is None:
-                node.right_child = BinaryNode(value)
-            else:
-                self._insert(node.right_child, value)
-        return node
-
-    def insert_list(self, lista: List[any]) -> None:
-        for x in lista:
-            self.insert(x)
-
-    def contains(self, value: any) -> bool:
-       if self.root.value == value:
-            return True
-       if self.root.value > value:
-            self.root = self.left_child
-       if self.root.value is not None and self.root.value < value:
-            x = BinarySearchTree(self.root.right_child)
-            x.contains(value)
-       return False
-
-
-    def remove(self, value: Any) -> None:
-        self.root = self._remove(self.root, value)
-
-    def _remove(self, node: BinaryNode, value: Any) -> BinaryNode:
-        if value == node.value:
-            if node.left_child is not None and node.right_child is not None:
-                return None
-            if node.left_child is None:
-                return node.right_child
-            if node.right_child is None:
-                return node.left_child
-            node.value = node.right_child.min()
-            node.right_child = self._remove(node.right_child, value)
-        if value < node.value:
-            node.left_child = self._remove(node.left_child, value)
-        if value > node.value:
-            node.right_child = self._remove(node.right_child, value)
-        return node
-    
-    def show(self) -> None:
-        self.root.show()
-
-
-
-
-print("")
-print(" ========================== korzeń binarny search ========================== ")
-print("")
-
-jodla: BinarySearchTree = BinarySearchTree(8)
-l = [3, 10, 14, 13, 1, 6, 4, 7]
-jodla.insert_list(l)
-print(jodla.contains(6))
-jodla.remove(6)
-print(jodla.contains(6))
-jodla.show()
-
-
-
-
-
-
-
+        counter++;
+        delay();
+    }
+}

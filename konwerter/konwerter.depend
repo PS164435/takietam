@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1708786125 source:d:\164435\konwerter\main.c
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+

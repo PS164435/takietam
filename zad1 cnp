@@ -1,0 +1,179 @@
+// CONFIG2
+#pragma config POSCMOD = HS             // Primary Oscillator Select (HS Oscillator mode selected)
+#pragma config OSCIOFNC = OFF           // Primary Oscillator Output Function (OSC2/CLKO/RC15 functions as CLKO (FOSC/2))
+#pragma config FCKSM = CSDCMD           // Clock Switching and Monitor (Clock switching and Fail-Safe Clock Monitor are disabled)
+#pragma config FNOSC = PRIPLL           // Oscillator Select (Primary Oscillator with PLL module (HSPLL, ECPLL))
+#pragma config IESO = OFF               // Internal External Switch Over Mode (IESO mode (Two-Speed Start-up) disabled)
+
+// CONFIG1
+#pragma config WDTPS = PS32768          // Watchdog Timer Postscaler (1:32,768)
+#pragma config FWPSA = PR128            // WDT Prescaler (Prescaler ratio of 1:128)
+#pragma config WINDIS = ON              // Watchdog Timer Window (Standard Watchdog Timer enabled,(Windowed-mode is disabled))
+#pragma config FWDTEN = OFF             // Watchdog Timer Enable (Watchdog Timer is disabled)
+#pragma config ICS = PGx2               // Comm Channel Select (Emulator/debugger uses EMUC2/EMUD2)
+#pragma config GWRP = OFF               // General Code Segment Write Protect (Writes to program memory are allowed)
+#pragma config GCP = OFF                // General Code Segment Code Protect (Code protection is disabled)
+#pragma config JTAGEN = OFF             // JTAG Port Enable (JTAG port is disabled)
+
+#include <xc.h>
+#include <libpic30.h>
+
+#define FCY 16000000UL // Definicja częstotliwości operacyjnej (dostosuj w razie potrzeby)
+#include <libpic30.h>
+
+unsigned char grayCode[256]; // Tablica do przechowywania wartości kodu Graya
+
+// Inicjalizacja tablicy kodu Graya
+void initGrayCode() {
+    for (int i = 0; i < 256; i++) {
+        grayCode[i] = i ^ (i >> 1);
+    }
+}
+
+// Funkcja opóźnienia w milisekundach
+void delay_ms(unsigned int ms) {
+    __delay32((FCY / 1000) * ms);
+}
+
+// Wyświetlanie wartości na diodach LED
+void displayLEDs(unsigned char value) {
+    LATA = value; // Wyświetla wartość na diodach LED podłączonych do PORTA
+}
+
+// Licznik binarny w górę
+void binaryCounterUp() {
+    for (unsigned char i = 0; i <= 255; i++) {
+        displayLEDs(i);
+        delay_ms(100);
+    }
+}
+
+// Licznik binarny w dół
+void binaryCounterDown() {
+    for (unsigned char i = 255; i > 0; i--) {
+        displayLEDs(i);
+        delay_ms(100);
+    }
+    displayLEDs(0); // Wyświetla 0 na końcu
+}
+
+// Licznik w kodzie Graya w górę
+void grayCounterUp() {
+    for (unsigned char i = 0; i <= 255; i++) {
+        displayLEDs(grayCode[i]);
+        delay_ms(100);
+    }
+}
+
+// Licznik w kodzie Graya w dół
+void grayCounterDown() {
+    for (unsigned char i = 255; i > 0; i--) {
+        displayLEDs(grayCode[i]);
+        delay_ms(100);
+    }
+    displayLEDs(grayCode[0]); // Wyświetla kod Graya 0 na końcu
+}
+
+// Licznik BCD w górę
+void bcdCounterUp() {
+    for (unsigned char i = 0; i <= 99; i++) {
+        unsigned char tens = (i / 10) << 4;
+        unsigned char units = i % 10;
+        displayLEDs(tens | units);
+        delay_ms(100);
+    }
+}
+
+// Licznik BCD w dół
+void bcdCounterDown() {
+    for (unsigned char i = 99; i > 0; i--) {
+        unsigned char tens = (i / 10) << 4;
+        unsigned char units = i % 10;
+        displayLEDs(tens | units);
+        delay_ms(100);
+    }
+    displayLEDs(0); // Wyświetla 0 na końcu
+}
+
+// Wzór "wężyka"
+void snakePattern() {
+    unsigned char pattern = 0b00000111;
+    while (1) {
+        displayLEDs(pattern);
+        delay_ms(200);
+        pattern = (pattern & 0b11100000) ? (pattern >> 1) : (pattern << 1);
+    }
+}
+
+// Wzór "kolejki"
+void queuePattern() {
+    unsigned char queue = 0b10000000;
+    while (1) {
+        displayLEDs(queue);
+        delay_ms(200);
+        queue = (queue == 0b00000001) ? 0b10000000 : (queue >> 1);
+    }
+}
+
+// Generator liczb pseudolosowych za pomocą LFSR
+unsigned char lfsr6() {
+    static unsigned char lfsr = 0b1110011;
+    unsigned char lsb = lfsr & 1;
+    lfsr >>= 1;
+    if (lsb) {
+        lfsr ^= 0b1000000;
+    }
+    return lfsr;
+}
+
+// Wyświetlanie liczb pseudolosowych
+void pseudoRandom() {
+    while (1) {
+        displayLEDs(lfsr6());
+        delay_ms(200);
+    }
+}
+
+// Tablica wskaźników do funkcji podprogramów
+void (*programs[9])() = {
+    binaryCounterUp,
+    binaryCounterDown,
+    grayCounterUp,
+    grayCounterDown,
+    bcdCounterUp,
+    bcdCounterDown,
+    snakePattern,
+    queuePattern,
+    pseudoRandom
+};
+
+int main(void) {
+    // Konfiguracja portów
+    TRISA = 0x0000; // Ustaw PORTA jako wyjście dla LED
+    TRISD = 0xFFFF; // Ustaw PORTD jako wejście dla przycisków
+
+    initGrayCode(); // Inicjalizacja tablicy kodu Graya
+
+    unsigned char currentProgram = 0;
+    unsigned char prevButton6 = 1, prevButton7 = 1;
+
+    while (1) {
+        unsigned char button6 = PORTDbits.RD6;
+        unsigned char button7 = PORTDbits.RD7;
+
+        if (button6 == 0 && prevButton6 == 1) {
+            currentProgram = (currentProgram + 1) % 9;
+        }
+
+        if (button7 == 0 && prevButton7 == 1) {
+            currentProgram = (currentProgram == 0) ? 8 : currentProgram - 1;
+        }
+
+        prevButton6 = button6;
+        prevButton7 = button7;
+
+        programs[currentProgram]();
+    }
+
+    return 0;
+}

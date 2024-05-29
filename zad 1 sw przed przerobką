@@ -1,0 +1,177 @@
+#include "xc.h"
+#include <libpic30.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+//inicjalizacja portow i timera (zegara)
+void init() {
+    TRISA = 0x0000;        // Ustaw port A na wyj?cie (diod LED)
+    TRISDbits.TRISD7 = 1;  // Ustaw RD7 jako wej?cie (przycisk do przodu)
+    TRISDbits.TRISD6 = 1;  // Ustaw RD6 jako wej?cie (przycisk do ty?u)
+}
+
+// funkcja dajaca opoznienie programow w milisekundach
+void delay(unsigned int ms) {
+    while(ms--) {
+        __delay32(40000); // Zakladajac, ze zegar to 40 MHz, 1 ms to 40000 cykli
+    }
+}
+// podprogram nr.1 - 8 bitowy licznik binarny zliczaj?cy w gór? (0?255)
+void binaryCounterUp() {
+    static unsigned char counter = 0;
+    LATA = counter++;
+    delay(50);
+}
+
+// podprogram nr.2 - 8 bitowy licznik binarny zliczaj?cy w dó? (255?0)
+void binaryCounterDown() {
+    static unsigned char counter = 255;
+    LATA = counter--;
+    delay(50);
+}
+
+// fukcja pomocnicza zamieniajaca binarnie na graya
+unsigned char bin2gray(unsigned char num) {
+    return num ^ (num >> 1);
+}
+
+// podprogram nr.3 - 8 bitowy licznik w kodzie Graya zliczaj?cy w gor? (repr. 0?255)
+void grayCounterUp() {
+    static unsigned char counter = 0;
+    LATA = bin2gray(counter++);
+    delay(50);
+}
+
+// podprogram nr.4 - 8 bitowy licznik w kodzie Graya zliczaj?cy w do? (repr. 255?0)
+void grayCounterDown() {
+    static unsigned char counter = 255;
+    LATA = bin2gray(counter--);
+    delay(50);
+}
+
+// fukcja pomocnicza zamieniajaca binarnie na bcd
+unsigned char bin2bcd(unsigned char num) {
+    return ((num / 10) << 4) | (num % 10);
+}
+
+// podprogram nr.5 - 2x4 bitowy licznik w kodzie BCD zliczaj?cy w gór? (0?99)
+void BCDCounterUp() {
+    static unsigned char counter = 0;
+    LATA = bin2bcd(counter++);
+    if (counter > 99) 
+    {
+        counter = 0;
+    }
+    delay(50);
+}
+
+// podprogram nr.6 - 2x4 bitowy licznik w kodzie BCD zliczaj?cy w dó? (99?0)
+void BCDCounterDown() {
+    static unsigned char counter = 99;
+    LATA = bin2bcd(counter--);
+    if (counter > 99)
+    {
+        counter = 99;
+    }
+    delay(50);
+}
+
+// podprogram nr.7 - 3 bitowy w??yk poruszaj?cy si? lewo-prawo
+void Snake() {
+    static unsigned char position = 0b111; //7 poczatek
+    static char direction = 1;
+    LATA = position;
+    if (position == 0b11100000) 
+    {
+        direction = -1;
+    }
+    if (position == 0b00000111)
+    {
+        direction = 1;
+    }
+    position = (direction == 1) ? (position << 1) : (position >> 1);
+    delay(50);
+}
+// podprogram nr.8 - Kolejka
+void Queue()
+{
+    static unsigned char leds = 0b00000000; // wszystkie diody wylaczone na poczatku
+    static unsigned char position = 0b00000001; // pierwsza dioda po prawej na poczatku wlaczona
+    static unsigned char lit_leds = 0; // stan poczatkowych wlaczonych ledow w kolejce - na poczatku 0
+
+    // ustawienie stanu diod na porcie A
+    LATA = leds | position;
+    delay(50);
+
+    // sprawdzenie, czy aktualna pozycja to najbardziej prawa dioda
+    if (position == 0b10000000)
+    {
+        // zwiekszenie licznika zapalonych diod od prawej
+        lit_leds++;
+        // resetuj pozycje do najbardziej prawej diody
+        position = 0b00000001;
+    } 
+    else
+    {
+        // przesuniecie diody w prawa strone w przeciwnym przypadku
+        position <<= 1;
+    }
+
+    // aktualizacja stanu diod zapalajac kolejne diody od prawej
+    leds = ~((1 << (8 - lit_leds)) - 1);
+
+    // jezeli wszystkie diody sa wlaczone to resetuje liczniki
+    if (lit_leds == 8) 
+    {
+        lit_leds = 0;
+        leds = 0;
+    }
+}
+
+// podprogram nr.9 - 6 bitowy generator liczb pseudolosowych oparty o konfiguracj? 1110011
+void Random() {
+    static unsigned char lfsr = 0b1110011;  // Pocz?tkowa wartosc 111001 w formacie heksadecymalnym
+    unsigned char bit;
+
+    bit = ((lfsr >> 0) ^ (lfsr >> 1)) & 1; // Generowanie pseudolosowego bitu
+    
+    lfsr = (lfsr >> 1) | (bit << 5); // Przesuni?cie rejestru i wstawienie nowego bitu
+    
+    // Wy?wietlenie warto?ci na 8-bitowym panelu diod LED
+    LATA = lfsr & 0x3F;  // Maskowanie tylko 6 bitów, reszta ustawiona na 0
+    
+    delay(50);
+}
+
+void main() {
+    init();
+    int current_program = 1;
+    while (1) {
+        switch (current_program) {
+            case 1: binaryCounterUp(); break;
+            case 2: binaryCounterDown(); break;
+            case 3: grayCounterUp(); break;
+            case 4: grayCounterDown(); break;
+            case 5: BCDCounterUp(); break;
+            case 6: BCDCounterDown(); break;
+            case 7: Snake(); break;
+            case 8: Queue(); break;
+            case 9: Random(); break;
+        }
+
+        if (PORTDbits.RD7 == 0) // Sprawdz przycisk do przodu
+        { 
+            delay(100);  // Debouncing - __delay32(200000);
+            current_program++;
+            if (current_program > 9) current_program = 1;
+        }
+        if (PORTDbits.RD6 == 0)   // Sprawdz przycisk do tylu
+        {
+            delay(100);  // Debouncing
+            current_program--;
+            if (current_program < 1) current_program = 9;
+        }
+        delay(5);  // Czas wykonywania programu
+    }
+}

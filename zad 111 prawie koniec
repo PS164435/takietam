@@ -1,0 +1,252 @@
+// CONFIG2
+#pragma config POSCMOD = HS             // Primary Oscillator Select (HS Oscillator mode selected)
+#pragma config OSCIOFNC = OFF           // Primary Oscillator Output Function (OSC2/CLKO/RC15 functions as CLKO (FOSC/2))
+#pragma config FCKSM = CSDCMD           // Clock Switching and Monitor (Clock switching and Fail-Safe Clock Monitor are disabled)
+#pragma config FNOSC = PRIPLL           // Oscillator Select (Primary Oscillator with PLL module (HSPLL, ECPLL))
+#pragma config IESO = OFF               // Internal External Switch Over Mode (IESO mode (Two-Speed Start-up) disabled)
+
+// CONFIG1
+#pragma config WDTPS = PS32768          // Watchdog Timer Postscaler (1:32,768)
+#pragma config FWPSA = PR128            // WDT Prescaler (Prescaler ratio of 1:128)
+#pragma config WINDIS = ON              // Watchdog Timer Window (Standard Watchdog Timer enabled,(Windowed-mode is disabled))
+#pragma config FWDTEN = OFF             // Watchdog Timer Enable (Watchdog Timer is disabled)
+#pragma config ICS = PGx2               // Comm Channel Select (Emulator/debugger uses EMUC2/EMUD2)
+#pragma config GWRP = OFF               // General Code Segment Write Protect (Writes to program memory are allowed)
+#pragma config GCP = OFF                // General Code Segment Code Protect (Code protection is disabled)
+#pragma config JTAGEN = OFF             // JTAG Port Enable (JTAG port is disabled)
+
+
+#include "xc.h"
+#include <libpic30.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+//inicjalizacja portow i timera
+void init() {
+    TRISA = 0x0000;        // port A jako wyjscie
+    TRISDbits.TRISD7 = 1;  // RD7 jako wejscie
+    TRISDbits.TRISD6 = 1;  // RD6 jako wejscie
+}
+
+// funkcja dajaca opoznienie programow w milisekundach
+void delay(unsigned int ms) {
+    while(ms--) {
+        __delay32(40000); // Zakladajac, ze zegar to 40 MHz, 1 ms to 40000 cykli
+    }
+}
+
+// podprogram 1 / licznik binarny w górę
+void podprogram1() {
+    static int liczba = 0;
+    LATA = liczba++;
+    delay(100);
+}
+
+// podprogram 2 / licznik binarny w dół
+void podprogram2() {
+    static int liczba = 255;
+    LATA = liczba--;
+    delay(100);
+}
+
+// zamiana binarnie -> Gray
+int nagraya(int liczba) {
+    return (liczba >> 1) ^ liczba;
+}
+
+// podprogram 3 / licznik w kodzie Graya w górę
+void podprogram3() {
+    static int liczba = 0;
+    LATA = nagraya(liczba++);
+    delay(100);
+}
+
+// podprogram 4 / licznik w kodzie Graya w dół
+void podprogram4() {
+    static int liczba = 255;
+    LATA = nagraya(liczba--);
+    delay(100);
+}
+
+// zamiana binarnie -> bcd
+int nabcd(int liczba) {
+    int bcd = 0;
+    int przesuniecie = 0;
+    while (liczba > 0) {
+        int jednosci = liczba % 10;
+        bcd |= (jednosci << (przesuniecie * 4));
+        liczba /= 10;
+        przesuniecie++;
+    }
+    return bcd;
+}
+
+// zamiana binarnie -> bcd
+int nabcd2(int liczba) {
+    int wynik = 0;
+    wynik |= (liczba % 10);
+    wynik |= ((liczba / 10) << 4);
+    return wynik;
+}
+
+// zamiana binarnie -> bcd
+int nabcd3(int liczba) {
+    return (liczba % 10) | ((liczba / 10) << 4);
+}
+
+// podprogram 5 / licznik BCD w górę
+void podprogram5() {
+    static int liczba = 0;
+    LATA = nabcd2(liczba++);
+    if (liczba > 99) 
+    {
+        liczba = 0;
+    }
+    delay(100);
+}
+
+// podprogram 6 / licznik BCD w dół
+void podprogram6() {
+    static int liczba = 99;
+    LATA = nabcd2(liczba--);
+    if (liczba < 0)
+    {
+        liczba = 99;
+    }
+    delay(100);
+}
+
+// podprogram 7 / wezyk
+void podprogram72() {
+    static int pozycja = 0b111;
+    static int lewoprawo = 1;
+    LATA = pozycja;
+    if (pozycja == 0b11100000) 
+    {
+        lewoprawo = -1;
+    }
+    if (pozycja == 0b00000111)
+    {
+        lewoprawo = 1;
+    }
+    pozycja = (lewoprawo == 1) ? (pozycja << 1) : (pozycja >> 1);
+    delay(100);
+}
+
+// podprogram 7 / wezyk
+void podprogram7() {
+    static int pozycja = 0b111;
+    static int lewoprawo = 1;
+    LATA = pozycja;
+    if (pozycja == 0b11100000) //gdzy przy lewej scianie
+    {
+        lewoprawo = -1; //idzie w prawo
+    }
+    if (pozycja == 0b00000111) //gdzy przy prawej scianie
+    {
+        lewoprawo = 1; //idzie w lewo
+    }
+    pozycja = (lewoprawo == 1) ? (pozycja << 1) : (pozycja >> 1);
+    delay(100);
+}
+
+// podprogram 8 / kolejka
+void podprogram81()
+{
+    static int leds = 0b00000001; // wszystkie diody wylaczone na poczatku
+    static int position = 0b00000001; // pierwsza dioda po prawej na poczatku wlaczona
+    static int lit_leds = 0; // stan poczatkowych wlaczonych ledow w kolejce - na poczatku 0
+
+    // ustawienie stanu diod na porcie A
+    LATA = leds | position;
+    delay(50);
+
+    // sprawdzenie, czy aktualna pozycja to najbardziej prawa dioda
+    if (position == 0b10000000)
+    {
+        // zwiekszenie licznika zapalonych diod od prawej
+        lit_leds++;
+        // resetuj pozycje do najbardziej prawej diody
+        position = 0b00000001;
+    } 
+    else
+    {
+        // przesuniecie diody w prawa strone w przeciwnym przypadku
+        position <<= 1;
+    }
+
+    // aktualizacja stanu diod zapalajac kolejne diody od prawej
+    leds = ~((1 << (8 - lit_leds)) - 1);
+
+    // jezeli wszystkie diody sa wlaczone to resetuje liczniki
+    if (lit_leds == 8) 
+    {
+        lit_leds = 0;
+        leds = 0;
+    }
+}
+
+
+void podprogram8()
+{
+    static int calosc = 0b00000000;
+    static int dioda = 0b00000001;
+    
+    for(int i = 8; i>0; i--){ 
+        for(int j = i; j>0; j--){ 
+                LATA = calosc | dioda;
+                delay(100);
+                dioda <<= 1; 
+            }
+        calosc = calosc | dioda;
+        dioda = 0b00000001;
+    }
+}
+
+// podprogram 9 / pseudolosowe
+void podprogram9() {
+    static int lfsr = 0b1110011;
+    static int bit;
+
+    bit = ((lfsr >> 0) ^ (lfsr >> 1)) & 1; // Generowanie pseudolosowego bitu
+
+    lfsr = (lfsr >> 1) | (bit << 5); // Przesuni?cie rejestru i wstawienie nowego bitu
+
+    // Wy?wietlenie warto?ci na 8-bitowym panelu diod LED
+    LATA = lfsr & 0x3F;  // Maskowanie tylko 6 bitów, reszta ustawiona na 0
+
+    delay(100);
+}
+
+void main() {
+    init();
+    int current_program = 1;
+    while (1) {
+        switch (current_program) {
+            case 1: podprogram8(); break;
+            case 2: podprogram2(); break;
+            case 3: podprogram3(); break;
+            case 4: podprogram4(); break;
+            case 5: podprogram5(); break;
+            case 6: podprogram6(); break;
+            case 7: podprogram7(); break;
+            case 8: podprogram8(); break;
+            case 9: podprogram9(); break;
+        }
+
+        if (PORTDbits.RD7 == 0) // Sprawdz przycisk do przodu
+        { 
+            delay(100);  // Debouncing - __delay32(200000);
+            current_program++;
+            if (current_program > 9) current_program = 1;
+        }
+        if (PORTDbits.RD6 == 0)   // Sprawdz przycisk do tylu
+        {
+            delay(100);  // Debouncing
+            current_program--;
+            if (current_program < 1) current_program = 9;
+        }
+        delay(5);  // Czas wykonywania programu
+    }
+}

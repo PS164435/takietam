@@ -1,0 +1,41 @@
+char currentS6 = 0, prevS6 = 0, currentS7 = 0, prevS7 = 0, currentS8 = 0, prevS8 = 0, currentS9 = 0, prevS9 = 0; //variables for buttons
+    int game = 1; // 0 pauza / 1 gra
+    int cyfra = 0; // od 0 do 9
+    int ktora = 0; // która cyfra na liczniku: 0,1,2,3
+    int czas = 754; // tu będą różne liczby
+    char player1CzasS[6], player2CzasS[6], czasS[6];
+
+    // ============== wyświetlanie czasu =========
+
+    int player1Czas = 671; // tu będą różne liczby
+    int player2Czas = 428; // tu będą różne liczby
+    int playerkolej = 1; // 1 lub 2
+
+    sprintf(player1CzasS, "%02d:%02d", player1Czas / 60, player1Czas % 60);
+    sprintf(player2CzasS, "%02d:%02d", player2Czas / 60, player2Czas % 60);
+    sprintf(czasS, "%02d:%02d", czas / 60, czas % 60);
+    
+
+    LCD_init();
+    
+    while (1) {
+        if (game == 1){
+            LCD_setCursor(1,0);
+            if (playerkolej == 1){
+                LCD_print("<- Tura gracz   ");
+            } else {
+                LCD_print("   Tura gracz ->");
+            }
+            LCD_setCursor(2,0);
+            LCD_print(player1CzasS);
+            LCD_print(" ---- ");
+            LCD_print(player2CzasS);
+        } else {
+            LCD_setCursor(1,0);
+            LCD_print("czas: ");
+            LCD_print(czasS);
+            LCD_setCursor(2,0);
+            if (ktora == 0){ LCD_print("      *");}
+            if (ktora == 1){ LCD_print("       *");}
+            if (ktora == 2){ LCD_print("         *");}
+            if (ktora == 3){ LCD_print("          *");}

@@ -1,0 +1,236 @@
+// CONFIG2
+#pragma config POSCMOD = NONE           // Primary Oscillator Select (primary oscillator disabled)
+#pragma config OSCIOFNC = OFF           // Primary Oscillator Output Function (OSC2/CLKO/RC15 functions as CLKO (FOSC/2))
+#pragma config FCKSM = CSDCMD           // Clock Switching and Monitor (Clock switching and Fail-Safe Clock Monitor are disabled)
+#pragma config FNOSC = FRC              // Oscillator Select (Fast RC Oscillator without Postscaler)
+#pragma config IESO = OFF               // Internal External Switch Over Mode (IESO mode (Two-Speed Start-up) disabled)
+// CONFIG1
+#pragma config WDTPS = PS32768          // Watchdog Timer Postscaler (1:32,768)
+#pragma config FWPSA = PR128            // WDT Prescaler (1:128)
+#pragma config WINDIS = ON              // Watchdog Timer Window Mode disabled
+#pragma config FWDTEN = OFF             // Watchdog Timer disabled
+#pragma config ICS = PGx2               // Emulator/debugger uses EMUC2/EMUD2
+#pragma config GWRP = OFF               // Writes to program memory allowed
+#pragma config GCP = OFF                // Code protection is disabled
+#pragma config JTAGEN = OFF             // JTAG port is disabled
+
+#include "xc.h"
+#include <libpic30.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Defninicja makr tak by kod byl czytelny, przejrzysty, deskryptywny i przyjazny
+// uzytkownikowi
+#define FCY         4000000UL   // czestotliwosc robocza oscylatora jako polowa
+                                //czestotliwosci (FNOSC = FRC -> FCY = 4000000)
+// Zdefiniowanie poszczegolnych pinow jako odpowiednie makra
+#define LCD_E       LATDbits.LATD4  
+#define LCD_RW      LATDbits.LATD5
+#define LCD_RS      LATBbits.LATB15
+#define LCD_DATA    LATE
+
+// Przypisanie wartosci poszczegolnych komend do wlasciwych makr
+#define LCD_CLEAR   0x01    //0b00000001
+#define LCD_HOME    0x02    //0b00000010
+#define LCD_ON      0x0C    //0b00001100
+#define LCD_OFF     0x08    //0b00001000
+#define LCD_CONFIG  0x38    //0b00111000
+#define LCD_CURSOR      0x80    //0b10000000
+#define LINE1           0x00
+#define LINE2           0x40
+#define LCD_CUST_CHAR   0x40    //0b01000000
+#define LCD_SHIFT_R     0x1D    //0b00011100
+#define LCD_SHIFT_L     0x1B    //0b00011000
+
+// Definicja funkcji delay w us i ms - operujacych na jednostkach czasu zamiast
+// cykli pracy oscylatora
+
+void __delay_us(unsigned long us){
+    __delay32(us*FCY/1000000);
+}
+
+void __delay_ms(unsigned long ms){
+    __delay32(ms*FCY/1000);
+}
+
+// Definicja funkcji wysylajacych komendy (RS = 0) i dane (RS = 1) za pomoca
+// magistrali rownoleglej (LCD_DATA). Znaki i komendy maja 8 bitow!
+
+void LCD_sendCommand(unsigned char command){
+    LCD_RW = 0;     // Zapis
+    LCD_RS = 0;     // Przesylanie komend
+    LCD_E = 1;      // Otwarcie transmisji danych
+    LCD_DATA = command;
+    __delay_us(50); // Opoznienie konieczne dla zapisania danych.
+    LCD_E = 0;      // Konieczne zablokowanie transmisji po przeslaniu komunikatu.
+}
+
+void LCD_sendData(unsigned char data){
+    LCD_RW = 0;
+    LCD_RS = 1;     // Przesylanie danych
+    LCD_E = 1;
+    LCD_DATA = data;
+    __delay_us(50);
+    LCD_E = 0;
+}
+
+// Funkcja print wyswietlajaca kolejne 8-bitowe znaki w petli while - * oznacza
+// przypisanie nie wartosci zmiennej lecz jej adresu.
+
+void LCD_print(unsigned char* string){
+    while(*string){
+        LCD_sendData(*string++);
+    }
+}
+
+// Funkcja ustawiajaca kursor w wybranym miejscu
+
+void LCD_setCursor(unsigned char row, unsigned char col){
+    unsigned char address;
+    if (row == 1){
+        address = LCD_CURSOR + LINE1 + col;
+    }
+    if (row == 2){
+        address = LCD_CURSOR + LINE2 + col;
+    }
+    LCD_sendCommand(address);
+}
+
+// Funkcja inicjalizujaca wyswietlacz LCD. Wysyla niezbedne komendy jak LCD_CONFIG
+// i LCD_ON
+
+void LCD_init(){
+    __delay_ms(20);
+    LCD_sendCommand(LCD_CONFIG);
+    __delay_us(50);     // opoznienia wynikaja ze specyfikacji wyswietlacza i czasu
+                        // przetwarzania poszczegolnych komend
+    LCD_sendCommand(LCD_ON);
+    __delay_us(50);
+    LCD_sendCommand(LCD_CLEAR);
+    __delay_ms(2);
+}
+
+int main(void) {
+    TRISB = 0x7FFF;     // Ustawienie rejestrow kierunku
+    TRISE = 0x0000;
+    TRISA = 0x0080;     // port set to output
+    TRISD = 0xFFE7;     // port set to input
+    
+    char currentS6 = 0, prevS6 = 0, currentS5 = 0, prevS5 = 0, currentS4 = 0, prevS4 = 0, currentS3 = 0, prevS3 = 0; //variables for buttons
+    int game = 0; // 0 pauza / 1 gra
+    int ktora = 0; // która cyfra na liczniku jest obslugiwana
+    int czas = 0; // czas ustawiony
+    char player1CzasS[6], player2CzasS[6], czasS[6]; // zmienne do zmiany czasow na napisy
+    int player1Czas = 0; // czas gracza 1
+    int player2Czas = 0; // czas gracza 2
+    int playerkolej = 1; // 1 lub 2
+
+    LCD_init(); // inicjalizacja wyswietlacza
+
+    while (1) {        
+        sprintf(player1CzasS, "%02d:%02d", player1Czas / 60, player1Czas % 60); // zamiana czasu gracza 1 na napis
+        sprintf(player2CzasS, "%02d:%02d", player2Czas / 60, player2Czas % 60); // zamiana czasu gracza 2 na napis
+        sprintf(czasS, "%02d:%02d", czas / 60, czas % 60);              // zamiana czasu ogolnego na napis
+        if (game == 1){                                                 // gdy gra trwa
+            if (playerkolej == 1 && player1Czas>0){                     // gdy jest kolej gracza 1 i wciaz ma czas
+                LCD_setCursor(1,0);                                     // ustawienie kursora, wiersz 1, kolumna 0
+                LCD_print("<-Tura  gracza  ");                          // wyswietlanie napisu czyja jest tura
+                LCD_setCursor(2,0);                                     // ustawienie kursora, wiersz 2, kolumna 0
+                LCD_print(player1CzasS);                                // wyswietlenie czasow
+                LCD_print(" ---- ");
+                LCD_print(player2CzasS);
+            } 
+            else if (playerkolej == 2 && player2Czas>0) {               // gdy jest kolej gracza 2 i wciaz ma czas
+                LCD_setCursor(1,0);                                     // ustawienie kursora, wiersz 1, kolumna 0
+                LCD_print("  Tura  gracza->");                          // wyswietlanie napisu czyja jest tura
+                LCD_setCursor(2,0);                                     // ustawienie kursora, wiersz 2, kolumna 0
+                LCD_print(player1CzasS);                                // wyswietlenie czasow
+                LCD_print(" ---- ");                        
+                LCD_print(player2CzasS);
+            }
+            else{                                                       // gdy komus skonczy sie czas                                 
+                game = 0;                                               // gra sie konczy
+                LCD_setCursor(1,0);                                     // ustawienie kursora, wiersz 1, kolumna 0
+                LCD_print("   Koniec gry   ");                          // wyswietlanie napisu czyja jest tura
+                LCD_setCursor(2,0);                                     // ustawienie kursora, wiersz 2, kolumna 0
+                if (playerkolej ==1){LCD_print("<--- WYGRYWA    ");}    // wyswietlenie napisu kto wygral
+                else{LCD_print("    WYGRYWA --->");}        
+                __delay_ms(1000);                                       // napis troche sie trzyma
+            }
+            
+            if (PORTDbits.RD6 == 0){ // przycisk S3 - stop gry
+                __delay_ms(500);
+                game = 0;
+            }
+            if (PORTDbits.RD7 == 0){ // przycisk S6 - zmiana tury na gracza 2
+                __delay_ms(100);
+                playerkolej = 2;
+            }
+            if (PORTAbits.RA7 == 0){ // przycisk S5 - zmiana tury na gracza 1
+                __delay_ms(100);
+                playerkolej = 1;
+            }
+            if (playerkolej == 1){   // zmniejszenie czasu gracza 1 podczas jego tury
+                player1Czas--;
+                __delay_ms(950);
+            } else {                 // zmniejszenie czasu gracza 2 podczas jego tury
+                player2Czas--;
+               __delay_ms(950);
+            } 
+        } else {                                             // gdy gra nie trwa
+            LCD_setCursor(1,0);                              // ustawienie kursora, wiersz 1, kolumna 0
+            LCD_print("czas: ");                             // wyswietlanie napisu
+            LCD_print(czasS);                                // wyswietlanie czasu ogolnego
+            LCD_print("     ");
+            LCD_setCursor(2,0);                              // ustawienie kursora, wiersz 2, kolumna 0
+            if (ktora == 0){ LCD_print("      ^         ");} // jesli ktora = 0, to pod pierwsza cyfra timera jest "^"
+            if (ktora == 1){ LCD_print("       ^        ");} // jesli ktora = 1, to pod droga cyfra timera jest "^"
+            if (ktora == 2){ LCD_print("         ^      ");} // jesli ktora = 2, to pod trzecia cyfra timera jest "^"
+            if (ktora == 3){ LCD_print("          ^     ");} // jesli ktora = 3, to pod czwarta cyfra timera jest "^"
+
+            if (PORTDbits.RD6 == 0){                         // przycisk S3 - start gry
+                __delay_ms(100);
+                playerkolej = 1;                             // zaczyna gracz 1
+                game = 1;                                    // gra zostaje odpalona
+                player1Czas = czas;                          // przypisanie czasu ogolnego do czsu gracza 1
+                player2Czas = czas;                          // przypisanie czasu ogolnego do czsu gracza 2
+            }
+
+            if (PORTDbits.RD7 == 0){                         // przycisk S6 - zwiekszanie cyfr timera
+                __delay_ms(100);
+                if (ktora == 0){                             // obsluga cyfry - dziesiatki minut
+                    czas = (czas / 600 == 9) ? (czas - 5400) : (czas + 600);
+                }
+                if (ktora == 1){                             // obsluga cyfry - jednosci minut
+                    czas = ((czas%600) / 60 == 9) ? (czas - 540) : (czas + 60);
+                }
+                if (ktora == 2){                             // obsluga cyfry - dziesiatki sekund
+                    czas = ((czas%60) / 10 == 5) ? (czas - 50) : (czas + 10);
+                }
+                if (ktora == 3){                             // obsluga cyfry - jednosci sekund
+                    czas = (czas%10 == 9) ? (czas - 9) : (czas + 1);
+                }
+            }
+            if (PORTAbits.RA7 == 0){                         // przycisk S5 - zmniejszenie cyfr timera
+                __delay_ms(100);
+                if (ktora == 0){                             // obsluga cyfry - dziesiatki minut
+                    czas = (czas / 600 == 0) ? (czas + 5400) : (czas - 600);
+                }
+                if (ktora == 1){                             // obsluga cyfry - jednosci minut
+                    czas = ((czas%600) / 60 == 0) ? (czas + 540) : (czas - 60);
+                }
+                if (ktora == 2){                             // obsluga cyfry - dziesiatki sekund
+                    czas = ((czas%60) / 10 == 0) ? (czas + 50) : (czas - 10);
+                }
+                if (ktora == 3){                             // obsluga cyfry - jednosci sekund
+                    czas = (czas%10 == 0) ? (czas + 9) : (czas - 1);
+                }
+            }
+            if (PORTDbits.RD13 == 0){                       // przycisk S54- zmiana obslugiwanej cyfry na liczniku
+                __delay_ms(100);
+                ktora = (ktora + 1) % 4;
+            }
+        }
+    }
+    return 0;
+}

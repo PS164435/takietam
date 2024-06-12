@@ -1,0 +1,234 @@
+// CONFIG2
+#pragma config POSCMOD = HS             // Primary Oscillator Select (primary oscillator disabled)
+#pragma config OSCIOFNC = OFF           // Primary Oscillator Output Function (OSC2/CLKO/RC15 functions as CLKO (FOSC/2))
+#pragma config FCKSM = CSDCMD           // Clock Switching and Monitor (Clock switching and Fail-Safe Clock Monitor are disabled)
+#pragma config FNOSC = PRIPLL           // Oscillator Select (Fast RC Oscillator without Postscaler)
+#pragma config IESO = OFF               // Internal External Switch Over Mode (IESO mode (Two-Speed Start-up) disabled)
+// CONFIG1
+#pragma config WDTPS = PS32768          // Watchdog Timer Postscaler (1:32,768)
+#pragma config FWPSA = PR128            // WDT Prescaler (1:128)
+#pragma config WINDIS = ON              // Watchdog Timer Window Mode disabled
+#pragma config FWDTEN = OFF             // Watchdog Timer disabled
+#pragma config ICS = PGx2               // Emulator/debugger uses EMUC2/EMUD2
+#pragma config GWRP = OFF               // Writes to program memory allowed
+#pragma config GCP = OFF                // Code protection is disabled
+#pragma config JTAGEN = OFF             // JTAG port is disabled
+
+#include "xc.h"
+#include <libpic30.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Defninicja makr tak by kod byl czytelny, przejrzysty, deskryptywny i przyjazny
+// uzytkownikowi
+#define FCY         4000000UL   // czestotliwosc robocza oscylatora jako polowa
+                                //czestotliwosci (FNOSC = FRC -> FCY = 4000000)
+// Zdefiniowanie poszczegolnych pinow jako odpowiednie makra
+#define LCD_E       LATDbits.LATD4  
+#define LCD_RW      LATDbits.LATD5
+#define LCD_RS      LATBbits.LATB15
+#define LCD_DATA    LATE
+
+// Przypisanie wartosci poszczegolnych komend do wlasciwych makr
+#define LCD_CLEAR   0x01    //0b00000001
+#define LCD_HOME    0x02    //0b00000010
+#define LCD_ON      0x0C    //0b00001100
+#define LCD_OFF     0x08    //0b00001000
+#define LCD_CONFIG  0x38    //0b00111000
+#define LCD_CURSOR      0x80    //0b10000000
+#define LINE1           0x00
+#define LINE2           0x40
+#define LCD_CUST_CHAR   0x40    //0b01000000
+#define LCD_SHIFT_R     0x1D    //0b00011100
+#define LCD_SHIFT_L     0x1B    //0b00011000
+
+// Definicja funkcji delay w us i ms - operujacych na jednostkach czasu zamiast
+// cykli pracy oscylatora
+
+void __delay_us(unsigned long us){
+    __delay32(us*FCY/1000000);
+}
+
+void __delay_ms(unsigned long ms){
+    __delay32(ms*FCY/1000);
+}
+
+// Definicja funkcji wysylajacych komendy (RS = 0) i dane (RS = 1) za pomoca
+// magistrali rownoleglej (LCD_DATA). Znaki i komendy maja 8 bitow!
+
+void LCD_sendCommand(unsigned char command){
+    LCD_RW = 0;     // Zapis
+    LCD_RS = 0;     // Przesylanie komend
+    LCD_E = 1;      // Otwarcie transmisji danych
+    LCD_DATA = command;
+    __delay_us(50); // Opoznienie konieczne dla zapisania danych.
+    LCD_E = 0;      // Konieczne zablokowanie transmisji po przeslaniu komunikatu.
+}
+
+void LCD_sendData(unsigned char data){
+    LCD_RW = 0;
+    LCD_RS = 1;     // Przesylanie danych
+    LCD_E = 1;
+    LCD_DATA = data;
+    __delay_us(50);
+    LCD_E = 0;
+}
+
+// Funkcja print wyswietlajaca kolejne 8-bitowe znaki w petli while - * oznacza
+// przypisanie nie wartosci zmiennej lecz jej adresu.
+
+void LCD_print(unsigned char* string){
+    while(*string){
+        LCD_sendData(*string++);
+    }
+}
+
+// Funkcja ustawiajaca kursor w wybranym miejscu
+
+void LCD_setCursor(unsigned char row, unsigned char col){
+    unsigned char address;
+    if (row == 1){
+        address = LCD_CURSOR + LINE1 + col;
+    }
+    if (row == 2){
+        address = LCD_CURSOR + LINE2 + col;
+    }
+    LCD_sendCommand(address);
+}
+
+// Funkcja ZAPISUJACA znak (zmienna array) do PAMIECI CGRAM na wybranym slocie
+// od 0 do 7
+
+void LCD_saveCustChar(unsigned char slot, unsigned char *array) {
+    unsigned char i;
+    LCD_sendCommand(LCD_CUST_CHAR + (slot*8));
+    for(i=0;i<8;i++){
+        LCD_sendData(array[i]);
+    }
+}
+
+// Funkcja inicjalizujaca wyswietlacz LCD. Wysyla niezbedne komendy jak LCD_CONFIG
+// i LCD_ON
+
+void LCD_init(){
+    __delay_ms(20);
+    LCD_sendCommand(LCD_CONFIG);
+    __delay_us(50);     // opoznienia wynikaja ze specyfikacji wyswietlacza i czasu
+                        // przetwarzania poszczegolnych komend
+    LCD_sendCommand(LCD_ON);
+    __delay_us(50);
+    LCD_sendCommand(LCD_CLEAR);
+    __delay_ms(2);
+}
+
+// Zdefiniowanie znaku niestandardowego w postaci tablicy 8x5 (8 linii po 5 kropek)
+
+unsigned char symbolWszystko[8] = {                 // znak specjalny - w pelni zamalowany
+    0b11111,
+    0b11111,
+    0b11111,
+    0b11111,
+    0b11111,
+    0b11111,
+    0b11111,
+    0b11111
+};
+
+int main(void) {
+
+    TRISB = 0x7FFF;     // Ustawienie rejestrow kierunku
+    TRISE = 0x0000;
+    TRISA = 0x0080;     // port set to output
+    TRISD = 0xFFE7;     // port set to input
+    AD1CON1 = 0x80E4;   //AD1CON1 = 0b1000000011100100;
+    AD1CON2 = 0x0404;   //AD1CON2 = 0b0000010000000100;
+    AD1CON3 = 0x0F00;   //AD1CON3 = 0b0000111100000000;
+    AD1CHS = 0;
+    AD1CSSL = 0x0020;   //AD1CSSL = 0b0000000000100000;
+
+    char currentS6 = 0, prevS6 = 0, currentS5 = 0, prevS5 = 0, currentS4 = 0, prevS4 = 0, currentS3 = 0, prevS3 = 0; //variables for buttons
+    int grzanie = 0; // 0 nie grzeje / 1 grzeje
+    int tryb = 0; // tryb przyciskow
+    int czas = 0; // czas ustawiony
+    char czasS[6];
+    char mocS[4];
+    unsigned int potencjometr; // wartosc potencjometru
+
+    LCD_init();
+    LCD_saveCustChar(0, symbolWszystko);            // Zapisanie znaku 'symbolWszystko' do pamieci CGRAM
+
+    while (1) { //  ======================================== while
+        while(!AD1CON1bits.DONE);  // czekaj dopoki konwersja ADC nie zostanie zakonczona
+        prevS3 = PORTDbits.RD6;    //scanning for a change of buttons' state
+        prevS6 = PORTDbits.RD7;
+        prevS5 = PORTAbits.RA7;
+        prevS4 = PORTDbits.RD13;
+        __delay_ms(1000);
+        currentS3 = PORTDbits.RD6;
+        currentS6 = PORTDbits.RD7;
+        currentS5 = PORTAbits.RA7;
+        currentS4 = PORTDbits.RD13;
+        potencjometr = (ADC1BUF0>1000)? (ADC1BUF0-23)/10 : ADC1BUF0/10;  // odczyt wartosci
+        // ======== wyswietlanie na lcd ========
+        sprintf(czasS, "%02d:%02d", czas / 60, czas % 60); // przerobienie czas na string
+        sprintf(mocS, "%03d%", potencjometr); // przerobienie moc na string
+        LCD_setCursor(1,0);
+        LCD_print("TRYB:");
+        LCD_sendData(0);
+        LCD_print("CZAS:");
+        LCD_sendData(0);
+        LCD_print("MOC:");
+        LCD_setCursor(2,0);
+         switch (tryb) {
+            case 0: LCD_print("   1s"); break;
+            case 1: LCD_print("  10s"); break;
+            case 2: LCD_print("   1m"); break;
+            case 3: LCD_print("  10m"); break;
+            case 4: LCD_print("RESET"); break;
+        }
+        LCD_sendData(0);
+        LCD_print(czasS);
+        LCD_sendData(0);
+        LCD_print(mocS);
+        //  ===========================================
+        // ===================== przyciski =====================
+        if (currentS3 - prevS3 == -1){ // --------------- czy przycisk ok?
+                grzanie = (grzanie==1) ? 0 : 1;
+        }
+        if (currentS6 - prevS6 == -1){ // dodawanie czasu
+            switch (tryb) {
+                case 0: czas += 1; break;
+                case 1: czas += 10; break;
+                case 2: czas += 60; break;
+                case 3: czas += 600; break;
+                case 4: czas = 0; break;
+            }
+            if (czas > 5999) czas = 5999;
+        }
+        if (currentS5 - prevS5 == -1){ // odejmowanie czasu
+            switch (tryb) {
+                case 0: czas -= 1; break;
+                case 1: czas -= 10; break;
+                case 2: czas -= 60; break;
+                case 3: czas -= 600; break;
+                case 4: czas = 0; break;
+            }
+            if (czas < 0) czas = 0;
+        }
+        if (currentS4 - prevS4 == -1){ //zmiana trybu
+                tryb = (tryb + 1) % 5;
+        }
+        //  ===========================================
+        //  ===================================== 1
+        if (grzanie == 1){
+            if (czas == 0) grzanie = 0;
+            czas--;
+            if (czas<0) czas=0;
+            __delay32(5000000);
+            __delay32(5000000);
+            __delay32(5000000);
+        }
+        // ==============================================
+    }
+    return 0;
+}
